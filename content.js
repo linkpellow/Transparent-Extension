@@ -466,6 +466,55 @@
     });
   }
 
+  // Inject umbrella icon into popup event title
+  async function injectIconIntoPopupTitle(popup, settings) {
+    if (!popup || !settings.iconEnabled) return;
+    
+    // Find the event title element in the popup
+    const titleSelectors = ['.UfeRlc', '.UfeRlc span[role="heading"]', '#rAECCd', '[role="heading"]'];
+    let titleElement = null;
+    
+    for (const selector of titleSelectors) {
+      const elements = popup.querySelectorAll(selector);
+      for (const el of elements) {
+        // Make sure it's actually a title (has text content)
+        if (el.textContent && el.textContent.trim().length > 0) {
+          titleElement = el;
+          break;
+        }
+      }
+      if (titleElement) break;
+    }
+    
+    if (!titleElement) return;
+    
+    // Check if icon already exists
+    const existingIcon = titleElement.querySelector('.tpi-popup-title-icon');
+    if (existingIcon) {
+      // Update icon if settings changed
+      applyIconColor(existingIcon, settings);
+      return;
+    }
+    
+    // Create umbrella icon
+    const icon = await createUmbrellaIcon(settings);
+    if (!icon) return;
+    
+    // Style for popup title (inline, next to text)
+    icon.classList.add('tpi-popup-title-icon');
+    icon.style.cssText = 'display: inline-block; vertical-align: middle; margin-right: 8px; width: 18px; height: 18px;';
+    
+    // Apply color
+    applyIconColor(icon, settings);
+    
+    // Insert icon at the beginning of the title element
+    if (titleElement.firstChild) {
+      titleElement.insertBefore(icon, titleElement.firstChild);
+    } else {
+      titleElement.appendChild(icon);
+    }
+  }
+  
   // Inject umbrella icon into event title
   function injectIconIntoEvent(eventElement, settings) {
     // CRITICAL: Never inject icons into popup elements - only into actual calendar event bars
@@ -1055,9 +1104,16 @@
                    reapplyColorsToProcessedEvents();
                    
                    const popup = node;
+
+                   // Load settings once for all popup modifications
+                   const currentSettings = await loadSettings();
                    
+                   // Inject icon into popup title
+                   injectIconIntoPopupTitle(popup, currentSettings);
+
                    // Style .xnWuge element with umbrella SVG
                    styleXnWugeElement(popup);
+
                    
                    // Remove specific element
                    removeSpecificElement(popup);
@@ -1080,11 +1136,13 @@
                      });
                      
                      // Also style immediately every 100ms as backup
-                     const intervalId = setInterval(() => {
+                     const intervalId = setInterval(async () => {
                        if (!popup.parentNode) {
                          clearInterval(intervalId);
                          return;
                        }
+                       const freshSettings = await loadSettings();
+                       injectIconIntoPopupTitle(popup, freshSettings);
                        styleXnWugeElement(popup);
                        removeSpecificElement(popup);
                      }, 100);
@@ -1093,13 +1151,13 @@
                    }
                    
                    // Apply element modifications
-                   const currentSettings = await loadSettings();
                    applyElementModifications(popup, currentSettings);
                    
                    // Set up observer to re-apply modifications if popup content changes
                    const modificationObserver = new MutationObserver(async () => {
                      // Load fresh settings in case user changed actions
                      const freshSettings = await loadSettings();
+                     injectIconIntoPopupTitle(popup, freshSettings);
                      applyElementModifications(popup, freshSettings);
                    });
                    
@@ -1115,10 +1173,15 @@
                    // Store active popup reference
                    activePopup = popup;
                    
-                   // Remove any umbrella icons from popup - icons only show on event bars
-                   // Remove all possible icon variations - be very aggressive
-                   const existingIcons = popup.querySelectorAll('.tpi-popup-umbrella-icon, .tpi-umbrella-icon');
-                   existingIcons.forEach(icon => icon.remove());
+                   // Remove umbrella icons from popup (but keep title icon)
+                   // Remove all possible icon variations except the title icon
+                   const existingIcons = popup.querySelectorAll('.tpi-popup-umbrella-icon, .tpi-umbrella-icon:not(.tpi-popup-title-icon)');
+                   existingIcons.forEach(icon => {
+                     // Don't remove the title icon
+                     if (!icon.classList.contains('tpi-popup-title-icon')) {
+                       icon.remove();
+                     }
+                   });
                    
                    // Also check for any SVG elements that might be umbrella icons
                    const allSvgs = popup.querySelectorAll('svg');

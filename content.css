@@ -1,19 +1,30 @@
 /* TPI - Additional styles for calendar events */
 
-/* Cyan/teal dominant glow with other colors flashing randomly - smoother and dimmer */
+/* Cyan/teal dominant glow with breathing pulse and subtle color flashes */
 @keyframes pulseGlow {
-  /* Base: Strong cyan/teal, no other colors */
+  /* Base: Dim cyan/teal (breath out) */
   0% {
     box-shadow: 
-      0 0 8px rgba(0, 245, 255, 0.12),       /* #00F5FF - bright cyan */
-      0 0 12px rgba(0, 200, 255, 0.1),     /* #00C8FF - cyan */
-      0 0 16px rgba(0, 191, 255, 0.08),      /* #00BFFF - deep sky blue */
-      0 0 20px rgba(0, 206, 209, 0.07),     /* #00CED1 - dark turquoise */
-      0 0 24px rgba(32, 178, 170, 0.06),     /* #20B2AA - light sea green */
-      0 0 28px rgba(0, 245, 255, 0.05),     /* #00F5FF - bright cyan */
-      0 0 32px rgba(0, 200, 255, 0.04);     /* #00C8FF - cyan */
+      0 0 8px rgba(0, 245, 255, 0.08),       /* #00F5FF - bright cyan */
+      0 0 12px rgba(0, 200, 255, 0.07),     /* #00C8FF - cyan */
+      0 0 16px rgba(0, 191, 255, 0.06),      /* #00BFFF - deep sky blue */
+      0 0 20px rgba(0, 206, 209, 0.05),     /* #00CED1 - dark turquoise */
+      0 0 24px rgba(32, 178, 170, 0.04),     /* #20B2AA - light sea green */
+      0 0 28px rgba(0, 245, 255, 0.03),     /* #00F5FF - bright cyan */
+      0 0 32px rgba(0, 200, 255, 0.025);     /* #00C8FF - cyan */
   }
-  /* Flash: Purple appears briefly */
+  /* Breathing in - getting brighter */
+  10% {
+    box-shadow: 
+      0 0 8px rgba(0, 245, 255, 0.1),       /* #00F5FF */
+      0 0 12px rgba(0, 200, 255, 0.085),     /* #00C8FF */
+      0 0 16px rgba(0, 191, 255, 0.07),      /* #00BFFF */
+      0 0 20px rgba(0, 206, 209, 0.06),     /* #00CED1 */
+      0 0 24px rgba(32, 178, 170, 0.05),     /* #20B2AA */
+      0 0 28px rgba(0, 245, 255, 0.04),     /* #00F5FF */
+      0 0 32px rgba(0, 200, 255, 0.03);     /* #00C8FF */
+  }
+  /* Flash: Purple appears briefly (breathing in) */
   20% {
     box-shadow: 
       0 0 8px rgba(0, 245, 255, 0.12),       /* #00F5FF */
@@ -24,7 +35,7 @@
       0 0 28px rgba(116, 32, 255, 0.06),     /* #7420FF - purple flash */
       0 0 32px rgba(0, 245, 255, 0.04);     /* #00F5FF */
   }
-  /* Back to base cyan/teal */
+  /* Peak brightness (breath in fully) */
   30% {
     box-shadow: 
       0 0 8px rgba(0, 245, 255, 0.12),       /* #00F5FF */
@@ -35,55 +46,88 @@
       0 0 28px rgba(0, 245, 255, 0.05),     /* #00F5FF */
       0 0 32px rgba(0, 200, 255, 0.04);     /* #00C8FF */
   }
-  /* Flash: Blue appears */
+  /* Starting to breathe out */
+  40% {
+    box-shadow: 
+      0 0 8px rgba(0, 245, 255, 0.11),       /* #00F5FF */
+      0 0 12px rgba(0, 200, 255, 0.09),     /* #00C8FF */
+      0 0 16px rgba(0, 191, 255, 0.075),      /* #00BFFF */
+      0 0 20px rgba(0, 206, 209, 0.065),     /* #00CED1 */
+      0 0 24px rgba(32, 178, 170, 0.055),     /* #20B2AA */
+      0 0 28px rgba(0, 245, 255, 0.045),     /* #00F5FF */
+      0 0 32px rgba(0, 200, 255, 0.035);     /* #00C8FF */
+  }
+  /* Flash: Blue appears (breathing out) */
   50% {
     box-shadow: 
-      0 0 8px rgba(0, 245, 255, 0.12),       /* #00F5FF */
-      0 0 12px rgba(0, 200, 255, 0.1),     /* #00C8FF */
-      0 0 16px rgba(0, 191, 255, 0.08),      /* #00BFFF */
-      0 0 20px rgba(0, 144, 255, 0.07),     /* #0090FF - blue flash */
-      0 0 24px rgba(32, 178, 170, 0.06),     /* #20B2AA */
-      0 0 28px rgba(0, 245, 255, 0.05),     /* #00F5FF */
-      0 0 32px rgba(0, 200, 255, 0.04);     /* #00C8FF */
+      0 0 8px rgba(0, 245, 255, 0.1),       /* #00F5FF */
+      0 0 12px rgba(0, 200, 255, 0.085),     /* #00C8FF */
+      0 0 16px rgba(0, 191, 255, 0.07),      /* #00BFFF */
+      0 0 20px rgba(0, 144, 255, 0.06),     /* #0090FF - blue flash */
+      0 0 24px rgba(32, 178, 170, 0.05),     /* #20B2AA */
+      0 0 28px rgba(0, 245, 255, 0.04),     /* #00F5FF */
+      0 0 32px rgba(0, 200, 255, 0.03);     /* #00C8FF */
   }
-  /* Back to base */
+  /* Continuing to breathe out */
   60% {
     box-shadow: 
-      0 0 8px rgba(0, 245, 255, 0.12),       /* #00F5FF */
-      0 0 12px rgba(0, 200, 255, 0.1),     /* #00C8FF */
-      0 0 16px rgba(0, 191, 255, 0.08),      /* #00BFFF */
-      0 0 20px rgba(0, 206, 209, 0.07),     /* #00CED1 */
-      0 0 24px rgba(32, 178, 170, 0.06),     /* #20B2AA */
-      0 0 28px rgba(0, 245, 255, 0.05),     /* #00F5FF */
-      0 0 32px rgba(0, 200, 255, 0.04);     /* #00C8FF */
+      0 0 8px rgba(0, 245, 255, 0.09),       /* #00F5FF */
+      0 0 12px rgba(0, 200, 255, 0.075),     /* #00C8FF */
+      0 0 16px rgba(0, 191, 255, 0.065),      /* #00BFFF */
+      0 0 20px rgba(0, 206, 209, 0.055),     /* #00CED1 */
+      0 0 24px rgba(32, 178, 170, 0.045),     /* #20B2AA */
+      0 0 28px rgba(0, 245, 255, 0.035),     /* #00F5FF */
+      0 0 32px rgba(0, 200, 255, 0.03);     /* #00C8FF */
   }
-  /* Flash: Purple-blue appears */
+  /* Breathing out more */
+  70% {
+    box-shadow: 
+      0 0 8px rgba(0, 245, 255, 0.085),       /* #00F5FF */
+      0 0 12px rgba(0, 200, 255, 0.07),     /* #00C8FF */
+      0 0 16px rgba(0, 191, 255, 0.06),      /* #00BFFF */
+      0 0 20px rgba(0, 206, 209, 0.05),     /* #00CED1 */
+      0 0 24px rgba(32, 178, 170, 0.04),     /* #20B2AA */
+      0 0 28px rgba(0, 245, 255, 0.03),     /* #00F5FF */
+      0 0 32px rgba(0, 200, 255, 0.025);     /* #00C8FF */
+  }
+  /* Flash: Purple-blue appears (breathing out) */
   80% {
     box-shadow: 
-      0 0 8px rgba(0, 245, 255, 0.12),       /* #00F5FF */
-      0 0 12px rgba(0, 200, 255, 0.1),     /* #00C8FF */
-      0 0 16px rgba(0, 191, 255, 0.08),      /* #00BFFF */
-      0 0 20px rgba(0, 206, 209, 0.07),     /* #00CED1 */
-      0 0 24px rgba(58, 42, 255, 0.06),     /* #3A2AFF - purple-blue flash */
-      0 0 28px rgba(0, 245, 255, 0.05),     /* #00F5FF */
-      0 0 32px rgba(0, 200, 255, 0.04);     /* #00C8FF */
+      0 0 8px rgba(0, 245, 255, 0.08),       /* #00F5FF */
+      0 0 12px rgba(0, 200, 255, 0.065),     /* #00C8FF */
+      0 0 16px rgba(0, 191, 255, 0.055),      /* #00BFFF */
+      0 0 20px rgba(0, 206, 209, 0.045),     /* #00CED1 */
+      0 0 24px rgba(58, 42, 255, 0.04),     /* #3A2AFF - purple-blue flash */
+      0 0 28px rgba(0, 245, 255, 0.03),     /* #00F5FF */
+      0 0 32px rgba(0, 200, 255, 0.025);     /* #00C8FF */
   }
-  /* Return to base */
+  /* Almost fully breathed out */
+  90% {
+    box-shadow: 
+      0 0 8px rgba(0, 245, 255, 0.075),       /* #00F5FF */
+      0 0 12px rgba(0, 200, 255, 0.06),     /* #00C8FF */
+      0 0 16px rgba(0, 191, 255, 0.05),      /* #00BFFF */
+      0 0 20px rgba(0, 206, 209, 0.04),     /* #00CED1 */
+      0 0 24px rgba(32, 178, 170, 0.035),     /* #20B2AA */
+      0 0 28px rgba(0, 245, 255, 0.025),     /* #00F5FF */
+      0 0 32px rgba(0, 200, 255, 0.02);     /* #00C8FF */
+  }
+  /* Return to dim base (fully breathed out) */
   100% {
     box-shadow: 
-      0 0 8px rgba(0, 245, 255, 0.12),       /* #00F5FF */
-      0 0 12px rgba(0, 200, 255, 0.1),     /* #00C8FF */
-      0 0 16px rgba(0, 191, 255, 0.08),      /* #00BFFF */
-      0 0 20px rgba(0, 206, 209, 0.07),     /* #00CED1 */
-      0 0 24px rgba(32, 178, 170, 0.06),     /* #20B2AA */
-      0 0 28px rgba(0, 245, 255, 0.05),     /* #00F5FF */
-      0 0 32px rgba(0, 200, 255, 0.04);     /* #00C8FF */
+      0 0 8px rgba(0, 245, 255, 0.08),       /* #00F5FF */
+      0 0 12px rgba(0, 200, 255, 0.07),     /* #00C8FF */
+      0 0 16px rgba(0, 191, 255, 0.06),      /* #00BFFF */
+      0 0 20px rgba(0, 206, 209, 0.05),     /* #00CED1 */
+      0 0 24px rgba(32, 178, 170, 0.04),     /* #20B2AA */
+      0 0 28px rgba(0, 245, 255, 0.03),     /* #00F5FF */
+      0 0 32px rgba(0, 200, 255, 0.025);     /* #00C8FF */
   }
 }
 
 [data-tpi-color] {
   transition: background-color 0.3s ease, border-color 0.3s ease !important;
-  animation: pulseGlow 4s ease-in-out infinite !important;
+  animation: pulseGlow 6s ease-in-out infinite !important;
 }
 
 /* Persist colors using CSS custom properties - this helps maintain colors when styles are reset */

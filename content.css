@@ -148,29 +148,35 @@
   left: -9999px !important;
 }
 
-/* Style .xnWuge with umbrella SVG background */
-/* JavaScript sets background-image dynamically - CSS only sets supporting properties */
-.hMdQi .xnWuge,
-.xnWuge {
-  background-repeat: no-repeat !important;
-  background-position: center !important;
-  background-size: contain !important;
-  /* background-color set by JS - don't override here */
-  -webkit-mask: none !important;
-  mask: none !important;
-}
-
 /* Apply the same border-radius to the colored background element to match the popup perfectly */
 /* JavaScript will dynamically set this to match the popup's actual border-radius */
+/* Note: .xnWuge is now hidden, so this is for any other colored elements */
 
 /* Ensure parent containers also respect border-radius */
 .hMdQi .zZj8Pb.EaVNbc {
   overflow: hidden !important;
 }
 
+/* Hide .xnWuge completely */
+.hMdQi .xnWuge {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Show the replacement icon for .xnWuge */
+.hMdQi .tpi-xnwuge-replacement {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
 /* CRITICAL: Never apply outlines to popup elements - only to calendar event bars */
 .hMdQi,
 .hMdQi *,
+.hMdQi .xnWuge,
 .hMdQi [data-tpi-color],
 .hMdQi [data-tpi-outline-enabled] {
   box-shadow: none !important;

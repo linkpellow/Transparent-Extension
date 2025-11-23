@@ -1,96 +1,62 @@
-// TPI Popup Script
-// Handles user interface interactions
+// TPI Popup Script - Simplified
+// Auto-applies default settings and handles settings gear modal
 
 const defaultSettings = {
   enabled: true,
-  filterMode: 'all', // 'all' or 'filtered'
-  filterKeywords: '',
+  filterMode: 'filtered',
+  filterKeywords: 'transparent',
   filterByTitle: true,
   filterByCalendar: false,
   caseSensitive: false,
-  colorMode: 'random',
-  customColor: '#4285f4',
+  colorMode: 'custom',
+  customColor: '#2e3c52',
   outlineEnabled: true,
-  outlineDisplayMode: 'all', // 'all' or 'filtered'
-  outlineThickness: 1, // in pixels
-  outlineColor: '#ffffff',
-  iconEnabled: false,
-  iconWhite: true, // Make icon white
-  iconDisplayMode: 'all', // 'all' or 'filtered' - for consistency with outline and text color
-  iconFilterMode: 'all', // 'all', 'filtered', or 'keywords' - legacy support
+  outlineDisplayMode: 'filtered',
+  outlineThickness: 0.7,
+  outlineColor: '#2cbcd4',
+  iconEnabled: true,
+  iconWhite: true,
+  iconDisplayMode: 'filtered',
+  iconFilterMode: 'filtered',
   iconKeywords: '',
-  customIconSvg: '', // Custom SVG icon code
-  textColorEnabled: false, // Enable text color customization
-  textColorDisplayMode: 'all', // 'all' or 'filtered'
-  textColor: '#ffffff' // Text color (default white)
+  customIconSvg: '',
+  textColorEnabled: true,
+  textColorDisplayMode: 'all',
+  textColor: '#ffffff',
+  googleCalendarBranding: false
 };
 
-// Load settings from storage
+// Load settings from storage or use defaults
 function loadSettings() {
   chrome.storage.sync.get(['tpiSettings'], (result) => {
     const settings = result.tpiSettings || defaultSettings;
     
-    // Update UI with loaded settings
+    // Update hidden form elements with loaded settings
     document.getElementById('enabledToggle').checked = settings.enabled;
-    document.getElementById('filterMode').value = settings.filterMode || 'all';
-    document.getElementById('filterKeywords').value = settings.filterKeywords || '';
-    document.getElementById('filterByTitle').checked = settings.filterByTitle !== false;
-    document.getElementById('filterByCalendar').checked = settings.filterByCalendar || false;
-    document.getElementById('caseSensitive').checked = settings.caseSensitive || false;
+    document.getElementById('filterMode').value = settings.filterMode;
+    document.getElementById('filterKeywords').value = settings.filterKeywords;
+    document.getElementById('filterByTitle').checked = settings.filterByTitle;
+    document.getElementById('filterByCalendar').checked = settings.filterByCalendar;
+    document.getElementById('caseSensitive').checked = settings.caseSensitive;
     document.getElementById('colorMode').value = settings.colorMode;
     document.getElementById('customColor').value = settings.customColor;
     document.getElementById('customColorText').value = settings.customColor;
-    document.getElementById('outlineEnabledToggle').checked = settings.outlineEnabled !== false;
-    document.getElementById('outlineDisplayMode').value = settings.outlineDisplayMode || 'all';
-    document.getElementById('outlineThickness').value = settings.outlineThickness || 1;
-    document.getElementById('outlineThicknessValue').textContent = (settings.outlineThickness || 1) + 'px';
-    document.getElementById('outlineColor').value = settings.outlineColor || '#ffffff';
-    document.getElementById('outlineColorText').value = settings.outlineColor || '#ffffff';
-    document.getElementById('iconEnabledToggle').checked = settings.iconEnabled || false;
-    document.getElementById('iconWhiteToggle').checked = settings.iconWhite !== false;
-    // Support both iconDisplayMode (new) and iconFilterMode (legacy) for backward compatibility
-    const iconDisplayMode = settings.iconDisplayMode || (settings.iconFilterMode === 'keywords' ? 'all' : (settings.iconFilterMode || 'all'));
-    document.getElementById('iconDisplayMode').value = iconDisplayMode === 'keywords' ? 'all' : iconDisplayMode;
-    document.getElementById('iconKeywords').value = settings.iconKeywords || '';
-    document.getElementById('customIconSvg').value = settings.customIconSvg || '';
-    document.getElementById('textColorEnabledToggle').checked = settings.textColorEnabled || false;
-    document.getElementById('textColorDisplayMode').value = settings.textColorDisplayMode || 'all';
-    document.getElementById('textColor').value = settings.textColor || '#ffffff';
-    document.getElementById('textColorText').value = settings.textColor || '#ffffff';
+    document.getElementById('outlineEnabledToggle').checked = settings.outlineEnabled;
+    document.getElementById('outlineDisplayMode').value = settings.outlineDisplayMode;
+    document.getElementById('outlineThickness').value = settings.outlineThickness;
+    document.getElementById('outlineColor').value = settings.outlineColor;
+    document.getElementById('outlineColorText').value = settings.outlineColor;
+    document.getElementById('iconEnabledToggle').checked = settings.iconEnabled;
+    document.getElementById('iconWhiteToggle').checked = settings.iconWhite;
+    document.getElementById('iconDisplayMode').value = settings.iconDisplayMode;
+    document.getElementById('textColorEnabledToggle').checked = settings.textColorEnabled;
+    document.getElementById('textColorDisplayMode').value = settings.textColorDisplayMode;
+    document.getElementById('textColor').value = settings.textColor;
+    document.getElementById('textColorText').value = settings.textColor;
+    document.getElementById('googleCalendarBranding').checked = settings.googleCalendarBranding || false;
     
-    // Show/hide clear button based on whether custom icon exists
-    const clearCustomIconBtn = document.getElementById('clearCustomIconBtn');
-    clearCustomIconBtn.style.display = (settings.customIconSvg && settings.customIconSvg.trim()) ? 'block' : 'none';
-    
-    // Show/hide sections
-    const customColorSection = document.getElementById('customColorSection');
-    customColorSection.style.display = settings.colorMode === 'custom' ? 'block' : 'none';
-    
-    const filterSection = document.getElementById('filterSection');
-    filterSection.style.display = settings.filterMode === 'filtered' ? 'block' : 'none';
-    
-    const outlineOptionsSection = document.getElementById('outlineOptionsSection');
-    outlineOptionsSection.style.display = settings.outlineEnabled !== false ? 'block' : 'none';
-    
-    const iconColorSection = document.getElementById('iconColorSection');
-    iconColorSection.style.display = settings.iconEnabled ? 'block' : 'none';
-    
-    const iconFilterSection = document.getElementById('iconFilterSection');
-    iconFilterSection.style.display = settings.iconEnabled ? 'block' : 'none';
-    
-    const iconKeywordsSection = document.getElementById('iconKeywordsSection');
-    iconKeywordsSection.style.display = (settings.iconEnabled && settings.iconFilterMode === 'keywords') ? 'block' : 'none';
-    
-    const textColorOptionsSection = document.getElementById('textColorOptionsSection');
-    textColorOptionsSection.style.display = settings.textColorEnabled ? 'block' : 'none';
-  });
-}
-
-// Save settings to storage
-function saveSettings(settings) {
-  chrome.storage.sync.set({ tpiSettings: settings }, () => {
-    // Notify content script of changes (storage.onChanged will handle it)
-    // No need to reload - the content script listens for storage changes
+    // Auto-apply settings
+    applySettings();
   });
 }
 
@@ -112,254 +78,73 @@ function getCurrentSettings() {
     iconEnabled: document.getElementById('iconEnabledToggle').checked,
     iconWhite: document.getElementById('iconWhiteToggle').checked,
     iconDisplayMode: document.getElementById('iconDisplayMode').value,
-    iconFilterMode: document.getElementById('iconDisplayMode').value, // Keep for backward compatibility
-    iconKeywords: document.getElementById('iconKeywords').value,
-    customIconSvg: document.getElementById('customIconSvg').value.trim(),
+    iconFilterMode: document.getElementById('iconDisplayMode').value,
+    iconKeywords: '',
+    customIconSvg: '',
     textColorEnabled: document.getElementById('textColorEnabledToggle').checked,
     textColorDisplayMode: document.getElementById('textColorDisplayMode').value,
-    textColor: document.getElementById('textColor').value
+    textColor: document.getElementById('textColor').value,
+    googleCalendarBranding: document.getElementById('googleCalendarBranding').checked
   };
 }
 
-// Initialize popup
+// Save settings to storage
+function saveSettings(settings) {
+  chrome.storage.sync.set({ tpiSettings: settings }, () => {
+    // Settings saved - content script will pick up changes via storage.onChanged
+  });
+}
+
+// Apply settings (save and trigger update)
+function applySettings() {
+  const settings = getCurrentSettings();
+  saveSettings(settings);
+}
+
+// Initialize on DOM load
 document.addEventListener('DOMContentLoaded', () => {
+  // Load and apply settings
   loadSettings();
-
-  // Enable/Disable toggle
-  document.getElementById('enabledToggle').addEventListener('change', (e) => {
-    const settings = getCurrentSettings();
-    saveSettings(settings);
+  
+  // Settings gear modal handlers
+  const settingsGear = document.getElementById('settingsGear');
+  const settingsModal = document.getElementById('settingsModal');
+  const closeSettings = document.getElementById('closeSettings');
+  const googleCalendarBranding = document.getElementById('googleCalendarBranding');
+  
+  // Open settings modal
+  settingsGear.addEventListener('click', () => {
+    settingsModal.style.display = 'flex';
   });
-
-  // Filter mode selector
-  document.getElementById('filterMode').addEventListener('change', (e) => {
-    const filterSection = document.getElementById('filterSection');
-    filterSection.style.display = e.target.value === 'filtered' ? 'block' : 'none';
-    
-    const settings = getCurrentSettings();
-    saveSettings(settings);
+  
+  // Close settings modal
+  closeSettings.addEventListener('click', () => {
+    settingsModal.style.display = 'none';
   });
-
-  // Filter keywords
-  document.getElementById('filterKeywords').addEventListener('input', (e) => {
-    const settings = getCurrentSettings();
-    saveSettings(settings);
-  });
-
-  // Filter options
-  document.getElementById('filterByTitle').addEventListener('change', () => {
-    const settings = getCurrentSettings();
-    saveSettings(settings);
-  });
-
-  document.getElementById('filterByCalendar').addEventListener('change', () => {
-    const settings = getCurrentSettings();
-    saveSettings(settings);
-  });
-
-  document.getElementById('caseSensitive').addEventListener('change', () => {
-    const settings = getCurrentSettings();
-    saveSettings(settings);
-  });
-
-  // Color mode selector
-  document.getElementById('colorMode').addEventListener('change', (e) => {
-    const customColorSection = document.getElementById('customColorSection');
-    customColorSection.style.display = e.target.value === 'custom' ? 'block' : 'none';
-    
-    const settings = getCurrentSettings();
-    saveSettings(settings);
-  });
-
-  // Outline enabled toggle
-  document.getElementById('outlineEnabledToggle').addEventListener('change', (e) => {
-    const outlineOptionsSection = document.getElementById('outlineOptionsSection');
-    outlineOptionsSection.style.display = e.target.checked ? 'block' : 'none';
-    
-    const settings = getCurrentSettings();
-    saveSettings(settings);
-  });
-
-  // Outline display mode selector
-  document.getElementById('outlineDisplayMode').addEventListener('change', () => {
-    const settings = getCurrentSettings();
-    saveSettings(settings);
-  });
-
-  // Outline thickness slider
-  document.getElementById('outlineThickness').addEventListener('input', (e) => {
-    document.getElementById('outlineThicknessValue').textContent = e.target.value + 'px';
-    const settings = getCurrentSettings();
-    saveSettings(settings);
-  });
-
-  // Outline color picker
-  document.getElementById('outlineColor').addEventListener('input', (e) => {
-    document.getElementById('outlineColorText').value = e.target.value;
-    const settings = getCurrentSettings();
-    saveSettings(settings);
-  });
-
-  // Outline color text input
-  document.getElementById('outlineColorText').addEventListener('input', (e) => {
-    const color = e.target.value;
-    if (/^#[0-9A-F]{6}$/i.test(color)) {
-      document.getElementById('outlineColor').value = color;
-      const settings = getCurrentSettings();
-      saveSettings(settings);
+  
+  // Close modal when clicking outside
+  settingsModal.addEventListener('click', (e) => {
+    if (e.target === settingsModal) {
+      settingsModal.style.display = 'none';
     }
   });
-
-  // Icon enabled toggle
-  document.getElementById('iconEnabledToggle').addEventListener('change', (e) => {
-    const iconColorSection = document.getElementById('iconColorSection');
-    iconColorSection.style.display = e.target.checked ? 'block' : 'none';
-    
-    const iconFilterSection = document.getElementById('iconFilterSection');
-    iconFilterSection.style.display = e.target.checked ? 'block' : 'none';
-    
-    const iconKeywordsSection = document.getElementById('iconKeywordsSection');
-    // Keywords section is hidden for now - can be re-enabled if needed
-    iconKeywordsSection.style.display = 'none';
-    
-    const settings = getCurrentSettings();
-    saveSettings(settings);
+  
+  // Handle Google Calendar branding checkbox
+  googleCalendarBranding.addEventListener('change', () => {
+    applySettings();
   });
-
-  // Icon white toggle
-  document.getElementById('iconWhiteToggle').addEventListener('change', () => {
-    const settings = getCurrentSettings();
-    saveSettings(settings);
+  
+  // Auto-apply settings when hidden form elements change (if they ever do)
+  // This ensures settings are always in sync
+  const hiddenInputs = document.querySelectorAll('div[style*="display: none"] input, div[style*="display: none"] select, div[style*="display: none"] textarea');
+  hiddenInputs.forEach(input => {
+    input.addEventListener('change', () => {
+      applySettings();
+    });
   });
-
-  // Text color enabled toggle
-  document.getElementById('textColorEnabledToggle').addEventListener('change', (e) => {
-    const textColorOptionsSection = document.getElementById('textColorOptionsSection');
-    textColorOptionsSection.style.display = e.target.checked ? 'block' : 'none';
-    
-    const settings = getCurrentSettings();
-    saveSettings(settings);
-  });
-
-  // Text color display mode
-  document.getElementById('textColorDisplayMode').addEventListener('change', () => {
-    const settings = getCurrentSettings();
-    saveSettings(settings);
-  });
-
-  // Text color picker
-  document.getElementById('textColor').addEventListener('input', (e) => {
-    document.getElementById('textColorText').value = e.target.value;
-    const settings = getCurrentSettings();
-    saveSettings(settings);
-  });
-
-  // Text color text input
-  document.getElementById('textColorText').addEventListener('input', (e) => {
-    const color = e.target.value;
-    if (/^#[0-9A-F]{6}$/i.test(color)) {
-      document.getElementById('textColor').value = color;
-      const settings = getCurrentSettings();
-      saveSettings(settings);
-    }
-  });
-
-  // Icon display mode
-  document.getElementById('iconDisplayMode').addEventListener('change', () => {
-    const settings = getCurrentSettings();
-    saveSettings(settings);
-  });
-
-  // Icon keywords
-  document.getElementById('iconKeywords').addEventListener('input', (e) => {
-    const settings = getCurrentSettings();
-    saveSettings(settings);
-  });
-
-  // Custom SVG icon
-  document.getElementById('customIconSvg').addEventListener('input', (e) => {
-    const clearCustomIconBtn = document.getElementById('clearCustomIconBtn');
-    clearCustomIconBtn.style.display = e.target.value.trim() ? 'block' : 'none';
-    
-    const settings = getCurrentSettings();
-    saveSettings(settings);
-  });
-
-  // Clear custom icon button
-  document.getElementById('clearCustomIconBtn').addEventListener('click', () => {
-    document.getElementById('customIconSvg').value = '';
-    document.getElementById('clearCustomIconBtn').style.display = 'none';
-    
-    const settings = getCurrentSettings();
-    saveSettings(settings);
-  });
-
-  // Color picker
-  document.getElementById('customColor').addEventListener('input', (e) => {
-    document.getElementById('customColorText').value = e.target.value;
-    const settings = getCurrentSettings();
-    saveSettings(settings);
-  });
-
-  // Color text input
-  document.getElementById('customColorText').addEventListener('input', (e) => {
-    const color = e.target.value;
-    if (/^#[0-9A-F]{6}$/i.test(color)) {
-      document.getElementById('customColor').value = color;
-      const settings = getCurrentSettings();
-      saveSettings(settings);
-    }
-  });
-
-  // Apply button
-  document.getElementById('applyBtn').addEventListener('click', () => {
-    const settings = getCurrentSettings();
-    saveSettings(settings);
-    
-    // Show feedback
-    const btn = document.getElementById('applyBtn');
-    const originalText = btn.textContent;
-    btn.textContent = 'Applied!';
-    btn.style.backgroundColor = '#34a853';
-    
-    setTimeout(() => {
-      btn.textContent = originalText;
-      btn.style.backgroundColor = '';
-    }, 1500);
-  });
-
-  // Reset button
-  document.getElementById('resetBtn').addEventListener('click', () => {
-    // Reset to defaults
-    const resetSettings = {
-      ...defaultSettings,
-      filterMode: 'all', // Reset filter to 'all' mode
-      filterKeywords: '',
-      filterByTitle: true,
-      filterByCalendar: false,
-      caseSensitive: false,
-      outlineEnabled: true,
-      outlineDisplayMode: 'all',
-      outlineThickness: 1,
-      outlineColor: '#ffffff',
-      iconEnabled: false,
-      iconWhite: true,
-      iconFilterMode: 'all',
-      iconKeywords: '',
-      customIconSvg: '',
-      textWhite: true
-    };
-    saveSettings(resetSettings);
-    loadSettings();
-    
-    // Show feedback
-    const btn = document.getElementById('resetBtn');
-    const originalText = btn.textContent;
-    btn.textContent = 'Reset!';
-    
-    setTimeout(() => {
-      btn.textContent = originalText;
-    }, 1500);
-  });
+  
+  // Auto-apply on page load to ensure defaults are set
+  setTimeout(() => {
+    applySettings();
+  }, 100);
 });
-

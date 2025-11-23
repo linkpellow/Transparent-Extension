@@ -21,9 +21,14 @@ body {
   padding-bottom: 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  position: relative;
+}
+
+.header-icon {
+  display: block;
 }
 
 .header-icon {
@@ -306,5 +311,106 @@ body {
   margin-right: 8px;
   cursor: pointer;
   accent-color: #00bcd4; /* Cyan */
+}
+
+/* Settings Gear Icon */
+.settings-gear {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  transition: color 0.2s, transform 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-gear:hover {
+  color: #00bcd4; /* Cyan */
+  transform: rotate(90deg);
+}
+
+.settings-gear svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Settings Modal */
+.settings-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.settings-modal-content {
+  background: #112336;
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.settings-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+}
+
+.close-settings {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.close-settings:hover {
+  color: #ffffff;
+}
+
+.settings-body {
+  padding: 0;
+}
+
+/* Hide all sections by default */
+.section {
+  display: none !important;
+}
+
+.section:has(.header-icon),
+.section:has(.settings-gear) {
+  display: block !important;
 }
 

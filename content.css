@@ -1,7 +1,89 @@
 /* TPI - Additional styles for calendar events */
 
+/* Cyan/teal dominant glow with other colors flashing randomly - smoother and dimmer */
+@keyframes pulseGlow {
+  /* Base: Strong cyan/teal, no other colors */
+  0% {
+    box-shadow: 
+      0 0 8px rgba(0, 245, 255, 0.12),       /* #00F5FF - bright cyan */
+      0 0 12px rgba(0, 200, 255, 0.1),     /* #00C8FF - cyan */
+      0 0 16px rgba(0, 191, 255, 0.08),      /* #00BFFF - deep sky blue */
+      0 0 20px rgba(0, 206, 209, 0.07),     /* #00CED1 - dark turquoise */
+      0 0 24px rgba(32, 178, 170, 0.06),     /* #20B2AA - light sea green */
+      0 0 28px rgba(0, 245, 255, 0.05),     /* #00F5FF - bright cyan */
+      0 0 32px rgba(0, 200, 255, 0.04);     /* #00C8FF - cyan */
+  }
+  /* Flash: Purple appears briefly */
+  20% {
+    box-shadow: 
+      0 0 8px rgba(0, 245, 255, 0.12),       /* #00F5FF */
+      0 0 12px rgba(0, 200, 255, 0.1),     /* #00C8FF */
+      0 0 16px rgba(0, 191, 255, 0.08),      /* #00BFFF */
+      0 0 20px rgba(0, 206, 209, 0.07),     /* #00CED1 */
+      0 0 24px rgba(32, 178, 170, 0.06),     /* #20B2AA */
+      0 0 28px rgba(116, 32, 255, 0.06),     /* #7420FF - purple flash */
+      0 0 32px rgba(0, 245, 255, 0.04);     /* #00F5FF */
+  }
+  /* Back to base cyan/teal */
+  30% {
+    box-shadow: 
+      0 0 8px rgba(0, 245, 255, 0.12),       /* #00F5FF */
+      0 0 12px rgba(0, 200, 255, 0.1),     /* #00C8FF */
+      0 0 16px rgba(0, 191, 255, 0.08),      /* #00BFFF */
+      0 0 20px rgba(0, 206, 209, 0.07),     /* #00CED1 */
+      0 0 24px rgba(32, 178, 170, 0.06),     /* #20B2AA */
+      0 0 28px rgba(0, 245, 255, 0.05),     /* #00F5FF */
+      0 0 32px rgba(0, 200, 255, 0.04);     /* #00C8FF */
+  }
+  /* Flash: Blue appears */
+  50% {
+    box-shadow: 
+      0 0 8px rgba(0, 245, 255, 0.12),       /* #00F5FF */
+      0 0 12px rgba(0, 200, 255, 0.1),     /* #00C8FF */
+      0 0 16px rgba(0, 191, 255, 0.08),      /* #00BFFF */
+      0 0 20px rgba(0, 144, 255, 0.07),     /* #0090FF - blue flash */
+      0 0 24px rgba(32, 178, 170, 0.06),     /* #20B2AA */
+      0 0 28px rgba(0, 245, 255, 0.05),     /* #00F5FF */
+      0 0 32px rgba(0, 200, 255, 0.04);     /* #00C8FF */
+  }
+  /* Back to base */
+  60% {
+    box-shadow: 
+      0 0 8px rgba(0, 245, 255, 0.12),       /* #00F5FF */
+      0 0 12px rgba(0, 200, 255, 0.1),     /* #00C8FF */
+      0 0 16px rgba(0, 191, 255, 0.08),      /* #00BFFF */
+      0 0 20px rgba(0, 206, 209, 0.07),     /* #00CED1 */
+      0 0 24px rgba(32, 178, 170, 0.06),     /* #20B2AA */
+      0 0 28px rgba(0, 245, 255, 0.05),     /* #00F5FF */
+      0 0 32px rgba(0, 200, 255, 0.04);     /* #00C8FF */
+  }
+  /* Flash: Purple-blue appears */
+  80% {
+    box-shadow: 
+      0 0 8px rgba(0, 245, 255, 0.12),       /* #00F5FF */
+      0 0 12px rgba(0, 200, 255, 0.1),     /* #00C8FF */
+      0 0 16px rgba(0, 191, 255, 0.08),      /* #00BFFF */
+      0 0 20px rgba(0, 206, 209, 0.07),     /* #00CED1 */
+      0 0 24px rgba(58, 42, 255, 0.06),     /* #3A2AFF - purple-blue flash */
+      0 0 28px rgba(0, 245, 255, 0.05),     /* #00F5FF */
+      0 0 32px rgba(0, 200, 255, 0.04);     /* #00C8FF */
+  }
+  /* Return to base */
+  100% {
+    box-shadow: 
+      0 0 8px rgba(0, 245, 255, 0.12),       /* #00F5FF */
+      0 0 12px rgba(0, 200, 255, 0.1),     /* #00C8FF */
+      0 0 16px rgba(0, 191, 255, 0.08),      /* #00BFFF */
+      0 0 20px rgba(0, 206, 209, 0.07),     /* #00CED1 */
+      0 0 24px rgba(32, 178, 170, 0.06),     /* #20B2AA */
+      0 0 28px rgba(0, 245, 255, 0.05),     /* #00F5FF */
+      0 0 32px rgba(0, 200, 255, 0.04);     /* #00C8FF */
+  }
+}
+
 [data-tpi-color] {
   transition: background-color 0.3s ease, border-color 0.3s ease !important;
+  animation: pulseGlow 4s ease-in-out infinite !important;
 }
 
 /* Persist colors using CSS custom properties - this helps maintain colors when styles are reset */
@@ -9,6 +91,7 @@
   background-color: var(--tpi-event-color) !important;
   border-color: var(--tpi-event-color) !important;
   border-radius: 12px !important; /* Increased border radius for rounded corners */
+  /* Multi-color glow effect will be animated via pulseGlow keyframes */
 }
 
 /* Also apply to color indicators */
@@ -37,6 +120,8 @@
 .tpi-colored-event {
   transition: background-color 0.3s ease, border-color 0.3s ease !important;
   border-radius: 12px !important; /* Increased border radius for rounded corners */
+  animation: pulseGlow 2s linear infinite !important;
+  /* Multi-color glow effect will be animated via pulseGlow keyframes */
 }
 
 /* Outline styles are now applied dynamically via JavaScript based on user settings */
@@ -53,13 +138,72 @@
   transition: background-color 0.3s ease !important;
 }
 
+/* Cute popout animation for umbrella icon */
+@keyframes iconPopout {
+  0%, 99% {
+    transform: scale(1);
+  }
+  1% {
+    transform: scale(1.3);
+  }
+  2% {
+    transform: scale(1.1);
+  }
+  3% {
+    transform: scale(1.2);
+  }
+  4% {
+    transform: scale(1);
+  }
+}
+
+/* Separate animation for positioned icons that need to preserve translateY */
+@keyframes iconPopoutWithTranslate {
+  0%, 99% {
+    transform: translateY(-10%) scale(1);
+  }
+  1% {
+    transform: translateY(-10%) scale(1.3);
+  }
+  2% {
+    transform: translateY(-10%) scale(1.1);
+  }
+  3% {
+    transform: translateY(-10%) scale(1.2);
+  }
+  4% {
+    transform: translateY(-10%) scale(1);
+  }
+}
+
+/* Animation for far-right icons with translateY(-50%) */
+@keyframes iconPopoutWithTranslateCenter {
+  0%, 99% {
+    transform: translateY(-50%) scale(1);
+  }
+  1% {
+    transform: translateY(-50%) scale(1.3);
+  }
+  2% {
+    transform: translateY(-50%) scale(1.1);
+  }
+  3% {
+    transform: translateY(-50%) scale(1.2);
+  }
+  4% {
+    transform: translateY(-50%) scale(1);
+  }
+}
+
 /* Umbrella icon styling - ensure it's NOT white */
 .tpi-umbrella-icon {
   display: inline-block !important;
   vertical-align: middle !important;
   margin-right: 4px !important;
-  width: 14px !important;
-  height: 14px !important;
+  animation: iconPopout 10s ease-in-out infinite !important;
+  transform-origin: center center !important;
+  width: 11px !important;
+  height: 11px !important;
   flex-shrink: 0 !important;
   color: #202124 !important;
 }
@@ -69,10 +213,12 @@
   position: absolute !important;
   left: 8px !important;
   top: 50% !important;
-  transform: translateY(-50%) !important;
+  transform: translateY(-10%) !important;
   width: 20px !important;
   height: 20px !important;
   display: block !important;
+  animation: iconPopoutWithTranslate 10s ease-in-out infinite !important;
+  transform-origin: center center !important;
   z-index: 10 !important;
   pointer-events: none !important;
   margin: 0 !important;
@@ -96,6 +242,8 @@
   z-index: 10 !important;
   pointer-events: none !important;
   margin: 0 !important;
+  animation: iconPopoutWithTranslateCenter 10s ease-in-out infinite !important;
+  transform-origin: center center !important;
 }
 
 .tpi-far-right-icon svg {
@@ -127,16 +275,23 @@
   overflow: hidden !important; /* Ensure child elements respect the border-radius */
   /* Add inset box-shadow outline - respects border-radius, doesn't affect layout */
   box-shadow: inset 0 0 0 2px #00d9ff !important; /* Bright cyan outline to match theme */
+  /* Increase popup width */
+  min-width: 500px !important;
+  width: auto !important;
+  max-width: 600px !important;
+  /* Add left padding to nudge text to the right */
+  padding-left: 20px !important;
 }
 
 /* Hide umbrella icons in popup - icons only show on event bars */
-.hMdQi .tpi-popup-umbrella-icon,
-.hMdQi .tpi-umbrella-icon,
+/* BUT show the replacement icon for .xnWuge */
+.hMdQi .tpi-popup-umbrella-icon:not(.tpi-xnwuge-replacement),
+.hMdQi .tpi-umbrella-icon:not(.tpi-xnwuge-replacement),
 .hMdQi .tpi-far-right-icon,
 .hMdQi .tpi-far-left-icon,
-.hMdQi [class*="tpi-popup-umbrella"],
-.hMdQi [class*="tpi-umbrella"],
-.hMdQi [class*="umbrella-icon"] {
+.hMdQi [class*="tpi-popup-umbrella"]:not(.tpi-xnwuge-replacement),
+.hMdQi [class*="tpi-umbrella"]:not(.tpi-xnwuge-replacement),
+.hMdQi [class*="umbrella-icon"]:not(.tpi-xnwuge-replacement) {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
@@ -166,11 +321,50 @@
   height: 0 !important;
 }
 
-/* Show the replacement icon for .xnWuge */
-.hMdQi .tpi-xnwuge-replacement {
+/* Show the replacement icon for .xnWuge - override all hiding rules */
+.hMdQi .tpi-xnwuge-replacement,
+.hMdQi .tpi-xnwuge-replacement.tpi-popup-umbrella-icon,
+.hMdQi .tpi-xnwuge-replacement.tpi-umbrella-icon,
+.hMdQi .zZj8Pb.EaVNbc .tpi-xnwuge-replacement {
   display: flex !important;
   visibility: visible !important;
   opacity: 1 !important;
+  width: 64px !important;
+  height: 64px !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Show the title icon - override all hiding rules */
+.hMdQi .tpi-title-icon,
+.hMdQi .tpi-title-icon.tpi-popup-umbrella-icon,
+.hMdQi .tpi-title-icon.tpi-umbrella-icon,
+.hMdQi .UfeRlc .tpi-title-icon,
+.hMdQi #rAECCd .tpi-title-icon,
+.hMdQi span[role="heading"] .tpi-title-icon {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 20px !important;
+  height: 20px !important;
+  margin-right: 8px !important;
+  vertical-align: middle !important;
+  flex-shrink: 0 !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Ensure the title icon SVG is visible */
+.hMdQi .tpi-title-icon svg {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 20px !important;
+  height: 20px !important;
+  vertical-align: middle !important;
 }
 
 /* CRITICAL: Never apply outlines to popup elements - only to calendar event bars */
@@ -209,17 +403,101 @@
   padding-top: 0 !important;
 }
 
-/* Remove padding/margin between event title and date/time */
-.hMdQi .UfeRlc + .AzuXid,
-.hMdQi .UfeRlc ~ .AzuXid,
-.hMdQi span[role="heading"] + .AzuXid,
-.hMdQi #rAECCd + .AzuXid {
+/* Remove padding/margin between event title and date/time - but allow spacing for our formatted version */
+.hMdQi .UfeRlc + .AzuXid:not(.tpi-formatted),
+.hMdQi .UfeRlc ~ .AzuXid:not(.tpi-formatted),
+.hMdQi span[role="heading"] + .AzuXid:not(.tpi-formatted),
+.hMdQi #rAECCd + .AzuXid:not(.tpi-formatted) {
   margin-top: 0 !important;
   padding-top: 0 !important;
 }
 
+/* Make date/time text smaller and move it down */
+.hMdQi .AzuXid {
+  font-size: 0.75em !important;
+  opacity: 0.9 !important;
+  margin-top: 20px !important;
+  padding-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+  line-height: 1.2 !important;
+}
+
+/* Spacing between date and time parts */
+.hMdQi .AzuXid .tpi-date-part {
+  display: inline-block !important;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+  line-height: 1.2 !important;
+  font-size: inherit !important;
+}
+
+.hMdQi .AzuXid .tpi-time-part {
+  display: inline-block !important;
+  margin-left: 5.5em !important; /* Adjust this value to control spacing */
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+  line-height: 3.2 !important;
+  font-size: inherit !important;
+}
+
+/* Remove any spacing from child spans */
+.hMdQi .AzuXid span {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+  line-height: 11.2 !important;
+  font-size: inherit !important;
+}
+
+/* Position action icons at bottom of popup */
+/* Best Practice: Parent must be position: relative for absolute children */
+.hMdQi {
+  position: relative !important;
+}
+
+/* Direct positioning of action icons at bottom */
+/* MDN: https://developer.mozilla.org/en-US/docs/Web/CSS/position#absolute_positioning */
+/* Best Practice: Use bottom property (not top) to position from bottom edge */
+.hMdQi .pYTkkf-Bz112c-RLmnJb {
+  position: absolute !important;
+  bottom: 16px !important;        /* Position from bottom edge */
+  /* Remove conflicting properties */
+  top: auto !important;            /* Remove top to avoid conflicts */
+  transform: none !important;      /* Remove transform that might reposition */
+  /* Ensure visibility */
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  z-index: 1000 !important;
+  /* Right position will be set inline by JavaScript for proper spacing */
+}
+
+/* Hide specific button element */
+.hMdQi #xDetDlg > div > div.Tnsqdc > div > div > div.pPTZAe > div:nth-child(1) > span > button > div,
+.hMdQi div.pPTZAe > div:nth-child(1) > span > button > div {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  pointer-events: none !important;
+}
+
+.hMdQi {
+  position: relative !important;
+}
+
 /* Also target the container that holds both title and date */
 .hMdQi .UfeRlc {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Reduce spacing in title container to allow date/time to move down */
+.hMdQi .UfeRlc,
+.hMdQi #rAECCd,
+.hMdQi span[role="heading"] {
   margin-bottom: 0 !important;
   padding-bottom: 0 !important;
 }
@@ -266,7 +544,8 @@
   visibility: hidden !important;
 }
 
-/* Move reminder section ("30 minutes before") up - JavaScript will handle positioning */
+/* Hide reminder section ("30 minutes before") and notification bell icon - JavaScript handles this */
+/* CSS can't target by text content, so JavaScript will handle hiding these elements */
 
 /* Description text - fallback */
 .hMdQi .XuJrye,
@@ -297,6 +576,18 @@
 .hMdQi a.UCosIb:hover,
 .hMdQi a.a1YAZe:hover {
   color: #00b8e6 !important; /* Slightly darker cyan on hover */
+}
+
+/* Hide "Take meeting notes" and "Start a new document to capture notes" - JavaScript handles text matching */
+/* CSS fallback: hide links that might contain these texts */
+.hMdQi a[href*="meetingnotes"],
+.hMdQi a[href*="meeting_notes"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 /* Make top toolbar icons white - target specific button classes */

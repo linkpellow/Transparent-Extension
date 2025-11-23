@@ -3,30 +3,33 @@
 
 (function() {
   'use strict';
+  
+  console.log('TPI: [DEBUG] Script loaded and running!');
 
   // Default color settings
   const defaultSettings = {
     enabled: true,
-    filterMode: 'all', // 'all' or 'filtered'
-    filterKeywords: '',
+    filterMode: 'filtered', // Only filtered events
+    filterKeywords: 'transparent',
     filterByTitle: true,
     filterByCalendar: false,
     caseSensitive: false,
-    colorMode: 'random', // 'random', 'gradient', 'custom'
-    customColor: '#4285f4',
+    colorMode: 'custom', // Event color mode
+    customColor: '#2e3c52', // Default event color
     outlineEnabled: true,
-    outlineDisplayMode: 'all', // 'all' or 'filtered'
-    outlineThickness: 1, // in pixels
-    outlineColor: '#ffffff',
-    iconEnabled: false,
+    outlineDisplayMode: 'filtered', // Filtered events only
+    outlineThickness: 0.7, // in pixels
+    outlineColor: '#2cbcd4', // Cyan outline color
+    iconEnabled: true, // Show umbrella icon
     iconWhite: true, // Make icon white
-    iconDisplayMode: 'all', // 'all' or 'filtered' - for consistency with outline and text color
-    iconFilterMode: 'all', // 'all', 'filtered', or 'keywords' - legacy support
+    iconDisplayMode: 'filtered', // Filtered events only
+    iconFilterMode: 'filtered', // Legacy support
     iconKeywords: '',
     customIconSvg: '', // Custom SVG icon code
-    textColorEnabled: false, // Enable text color customization
-    textColorDisplayMode: 'all', // 'all' or 'filtered'
-    textColor: '#ffffff' // Text color (default white)
+    textColorEnabled: true, // Enable text color
+    textColorDisplayMode: 'all', // All events
+    textColor: '#ffffff', // White text color
+    googleCalendarBranding: false // Google Calendar branding toggle
   };
 
   // Load settings from storage
@@ -397,62 +400,212 @@
     return false;
   }
 
-  // Replace .xnWuge element with SVG icon - aggressive approach
-  async function replaceXnWugeWithIcon(popup, settings) {
+  // Get timezone abbreviation
+  function getTimezoneAbbreviation(timezone) {
+    try {
+      const now = new Date();
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: timezone,
+        timeZoneName: 'short'
+      });
+      const parts = formatter.formatToParts(now);
+      const tzName = parts.find(part => part.type === 'timeZoneName');
+      return tzName ? tzName.value : '';
+    } catch (e) {
+      // Fallback: try to extract from timezone string
+      const match = timezone.match(/\/([^/]+)$/);
+      if (match) {
+        const city = match[1].replace(/_/g, ' ');
+        // Common timezone abbreviations
+        const tzMap = {
+          'America/New_York': 'EST',
+          'America/Chicago': 'CST',
+          'America/Denver': 'MST',
+          'America/Los_Angeles': 'PST',
+          'America/Phoenix': 'MST',
+          'Europe/London': 'GMT',
+          'Europe/Paris': 'CET',
+          'Asia/Tokyo': 'JST'
+        };
+        return tzMap[timezone] || city.substring(0, 3).toUpperCase();
+      }
+      return '';
+    }
+  }
+
+  // Hide reminder ("30 minutes before"), "Link Pellow", and notification bell icon
+  function hideReminderAndAttendee(popup) {
     if (!popup) return;
     
-    function doReplace() {
-      // Find the .xnWuge element
-      const xnWuge = popup.querySelector('.xnWuge');
-      if (!xnWuge) return false;
-      
-      // Check if already replaced
-      if (popup.querySelector('.tpi-xnwuge-replacement')) {
-        return true; // Already replaced
+    // Hide "30 minutes before" text
+    const allElements = popup.querySelectorAll('div, span, p');
+    allElements.forEach(el => {
+      const text = el.textContent || '';
+      if (text.trim() === '30 minutes before' || 
+          (text.includes('30 minutes before') && 
+           !text.includes('Link Pellow') &&
+           !text.includes('Notes -'))) {
+        el.style.setProperty('display', 'none', 'important');
+        el.style.setProperty('visibility', 'hidden', 'important');
+        // Also hide parent if it only contains the reminder
+        const parent = el.parentElement;
+        if (parent && (parent.textContent || '').trim() === '30 minutes before') {
+          parent.style.setProperty('display', 'none', 'important');
+          parent.style.setProperty('visibility', 'hidden', 'important');
+        }
+      }
+    });
+    
+    // Hide notification bell icon
+    const bellIcons = popup.querySelectorAll('i.google-material-icons[aria-hidden="true"]');
+    bellIcons.forEach(icon => {
+      const iconText = icon.textContent || icon.innerText || '';
+      if (iconText.includes('notifications') || iconText.includes('notification')) {
+        icon.style.setProperty('display', 'none', 'important');
+        icon.style.setProperty('visibility', 'hidden', 'important');
+        // Also hide parent container if it only contains the bell
+        const parent = icon.parentElement;
+        if (parent && parent.querySelectorAll('i.google-material-icons').length === 1) {
+          parent.style.setProperty('display', 'none', 'important');
+          parent.style.setProperty('visibility', 'hidden', 'important');
+        }
+      }
+    });
+    
+    // Hide "Link Pellow" - hide it everywhere
+    const linkPellowElements = popup.querySelectorAll('div, span, p');
+    linkPellowElements.forEach(el => {
+      const text = el.textContent || el.innerText || '';
+      if (text.trim() === 'Link Pellow' || text.trim().startsWith('Link Pellow')) {
+        // Hide the element
+        el.style.setProperty('display', 'none', 'important');
+        el.style.setProperty('visibility', 'hidden', 'important');
+        el.style.setProperty('opacity', '0', 'important');
+        el.style.setProperty('height', '0', 'important');
+        el.style.setProperty('margin', '0', 'important');
+        el.style.setProperty('padding', '0', 'important');
+      }
+    });
+    
+    // Also specifically target div.Fh4HL elements
+    const attendeeDivs = popup.querySelectorAll('div.Fh4HL');
+    attendeeDivs.forEach(div => {
+      if (div.textContent && div.textContent.trim() === 'Link Pellow') {
+        div.style.setProperty('display', 'none', 'important');
+        div.style.setProperty('visibility', 'hidden', 'important');
+        div.style.setProperty('opacity', '0', 'important');
+        div.style.setProperty('height', '0', 'important');
+        div.style.setProperty('margin', '0', 'important');
+        div.style.setProperty('padding', '0', 'important');
+      }
+    });
+    
+    // Hide "Take meeting notes" and "Start a new document to capture notes"
+    const allTextElements = popup.querySelectorAll('a, div, span, p');
+    allTextElements.forEach(el => {
+      const text = el.textContent || el.innerText || '';
+      if (text.includes('Take meeting notes') || 
+          text.includes('Start a new document to capture notes') ||
+          text.trim() === 'Take meeting notes' ||
+          text.trim() === 'Start a new document to capture notes') {
+        // Hide the element and its parent container if it's a link
+        el.style.setProperty('display', 'none', 'important');
+        el.style.setProperty('visibility', 'hidden', 'important');
+        el.style.setProperty('opacity', '0', 'important');
+        el.style.setProperty('height', '0', 'important');
+        el.style.setProperty('margin', '0', 'important');
+        el.style.setProperty('padding', '0', 'important');
+        
+        // If it's a link, also hide its parent container
+        if (el.tagName === 'A' || el.closest('a')) {
+          const linkElement = el.tagName === 'A' ? el : el.closest('a');
+          if (linkElement && linkElement.parentElement) {
+            const parent = linkElement.parentElement;
+            // Check if parent only contains this link
+            const parentText = parent.textContent || '';
+            if (parentText.includes('Take meeting notes') || 
+                parentText.includes('Start a new document to capture notes')) {
+              parent.style.setProperty('display', 'none', 'important');
+              parent.style.setProperty('visibility', 'hidden', 'important');
+              parent.style.setProperty('opacity', '0', 'important');
+              parent.style.setProperty('height', '0', 'important');
+              parent.style.setProperty('margin', '0', 'important');
+              parent.style.setProperty('padding', '0', 'important');
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // Inject SVG icon where .xnWuge was - simple direct approach
+  async function injectIconInXnWugeLocation(popup, settings) {
+    console.log('TPI: [DEBUG] injectIconInXnWugeLocation called!', popup, settings);
+    if (!popup) {
+      console.warn('TPI: [DEBUG] No popup provided!');
+      return;
+    }
+    
+    console.log('TPI: [DEBUG] Popup element:', popup, 'Class:', popup.className);
+    
+    // Check if already injected
+    if (popup.querySelector('.tpi-xnwuge-replacement')) {
+      console.log('TPI: [DEBUG] Already has xnWuge replacement, continuing for title icon');
+      // Don't return - we still want to inject title icon
+    }
+    
+    function injectIcon() {
+      // Find the title element to inject icon in front of it
+      const titleElement = popup.querySelector('#rAECCd') || 
+                          popup.querySelector('.UfeRlc') || 
+                          popup.querySelector('span[role="heading"]');
+      if (!titleElement) {
+        console.debug('TPI: Title element not found');
+        return false;
       }
       
-      // Get parent and position before removing
-      const parent = xnWuge.parentElement;
-      if (!parent) return false;
+      // Check if icon already exists
+      if (titleElement.querySelector('.tpi-xnwuge-replacement') || 
+          titleElement.previousElementSibling?.classList.contains('tpi-xnwuge-replacement')) {
+        return true; // Already injected
+      }
       
-      // Get computed styles
-      const xnWugeStyle = window.getComputedStyle(xnWuge);
-      const position = xnWugeStyle.position || 'absolute';
-      const top = xnWugeStyle.top || '0';
-      const left = xnWugeStyle.left || '0';
-      const width = xnWugeStyle.width || '64px';
-      const height = xnWugeStyle.height || '64px';
-      const zIndex = xnWugeStyle.zIndex || '1';
+      console.debug('TPI: Injecting icon in front of title');
       
-      // Create umbrella icon
+      // Create and inject icon
       createUmbrellaIcon(settings).then(icon => {
-        if (!icon) return;
+        if (!icon) {
+          console.debug('TPI: Failed to create icon');
+          return;
+        }
         
-        // Style the icon to match .xnWuge's position and size
-        icon.style.setProperty('position', position, 'important');
-        icon.style.setProperty('top', top, 'important');
-        icon.style.setProperty('left', left, 'important');
-        icon.style.setProperty('width', width, 'important');
-        icon.style.setProperty('height', height, 'important');
-        icon.style.setProperty('display', 'flex', 'important');
-        icon.style.setProperty('align-items', 'center', 'important');
-        icon.style.setProperty('justify-content', 'center', 'important');
-        icon.style.setProperty('z-index', zIndex, 'important');
-        icon.style.setProperty('pointer-events', 'none', 'important');
+        console.debug('TPI: Icon created, injecting...', icon);
+        
+        // Style the icon for front of title - larger size
+        icon.style.setProperty('display', 'inline-block', 'important');
+        icon.style.setProperty('vertical-align', 'middle', 'important');
+        icon.style.setProperty('margin-right', '12px', 'important');
+        icon.style.setProperty('margin-left', '8px', 'important');
+        icon.style.setProperty('margin-top', '4px', 'important');
+        icon.style.setProperty('width', '48px', 'important');
+        icon.style.setProperty('height', '48px', 'important');
+        icon.style.setProperty('flex-shrink', '0', 'important');
+        icon.style.setProperty('visibility', 'visible', 'important');
+        icon.style.setProperty('opacity', '1', 'important');
         icon.classList.add('tpi-xnwuge-replacement');
+        
+        // Remove any classes that might cause it to be hidden
+        icon.classList.remove('tpi-popup-umbrella-icon', 'tpi-umbrella-icon');
         
         // For SVG elements, ensure proper sizing
         const svgElement = icon.tagName === 'svg' ? icon : icon.querySelector('svg');
         if (svgElement) {
-          const size = Math.min(
-            parseInt(width) || 64,
-            parseInt(height) || 64
-          );
-          svgElement.setAttribute('width', size.toString());
-          svgElement.setAttribute('height', size.toString());
-          svgElement.style.setProperty('width', '100%', 'important');
-          svgElement.style.setProperty('height', '100%', 'important');
-          svgElement.style.setProperty('display', 'block', 'important');
+          svgElement.setAttribute('width', '48');
+          svgElement.setAttribute('height', '48');
+          svgElement.style.setProperty('width', '48px', 'important');
+          svgElement.style.setProperty('height', '48px', 'important');
+          svgElement.style.setProperty('display', 'inline-block', 'important');
+          svgElement.style.setProperty('vertical-align', 'middle', 'important');
         }
         
         // Set icon color to white for visibility
@@ -460,34 +613,224 @@
         const svgForColor = icon.tagName === 'svg' ? icon : icon.querySelector('svg');
         if (svgForColor) {
           svgForColor.style.setProperty('color', '#ffffff', 'important');
-          const paths = svgForColor.querySelectorAll('path, circle, line');
+          svgForColor.style.setProperty('fill', '#ffffff', 'important');
+          const paths = svgForColor.querySelectorAll('path, circle, line, rect, polygon');
           paths.forEach(path => {
-            if (path.getAttribute('fill') && path.getAttribute('fill') !== 'none') {
+            const fill = path.getAttribute('fill');
+            const stroke = path.getAttribute('stroke');
+            if (fill && fill !== 'none' && fill !== 'transparent') {
               path.setAttribute('fill', '#ffffff');
             }
-            if (path.getAttribute('stroke') && path.getAttribute('stroke') !== 'none') {
+            if (stroke && stroke !== 'none' && stroke !== 'transparent') {
               path.setAttribute('stroke', '#ffffff');
             }
           });
         }
         
-        // REMOVE .xnWuge completely
-        xnWuge.remove();
+        // Insert icon at the very beginning of title element (before the text)
+        if (titleElement.firstChild) {
+          titleElement.insertBefore(icon, titleElement.firstChild);
+        } else {
+          titleElement.appendChild(icon);
+        }
         
-        // Insert icon in the same position
-        parent.appendChild(icon);
+        // Format the title: move "Robert Parkfield" to new line, make it smaller, remove "—"
+        const titleText = titleElement.textContent || titleElement.innerText || '';
+        if (titleText.includes('Transparent Insurance') && titleText.includes('Robert Parkfield')) {
+          // Get all text nodes (excluding the icon we just added)
+          const textNodes = Array.from(titleElement.childNodes).filter(
+            node => node.nodeType === Node.TEXT_NODE
+          );
+          
+          // Clear existing text content but keep the icon
+          textNodes.forEach(node => node.remove());
+          
+          // Create "Transparent Insurance" text (bolder)
+          const mainTextSpan = document.createElement('span');
+          mainTextSpan.textContent = 'Transparent Insurance';
+          mainTextSpan.style.setProperty('font-weight', '600', 'important');
+          titleElement.appendChild(mainTextSpan);
+          
+          // Create line break
+          const br = document.createElement('br');
+          titleElement.appendChild(br);
+          
+          // Create "Robert Parkfield" text (smaller, no dash)
+          const nameSpan = document.createElement('span');
+          nameSpan.textContent = 'Robert Parkfield';
+          nameSpan.style.setProperty('font-size', '0.7em', 'important');
+          nameSpan.style.setProperty('opacity', '0.9', 'important');
+          nameSpan.style.setProperty('display', 'block', 'important');
+          nameSpan.style.setProperty('margin-bottom', '16px', 'important');
+          nameSpan.style.setProperty('padding-bottom', '8px', 'important');
+          titleElement.appendChild(nameSpan);
+          
+          // Set white-space to pre-line to respect line breaks
+          titleElement.style.setProperty('white-space', 'pre-line', 'important');
+        }
+        
+        // Format time display: remove end time, keep only start time, add timezone, separate date and time with CSS
+        const dateTimeElement = popup.querySelector('.AzuXid');
+        if (dateTimeElement) {
+          // Mark as formatted so CSS spacing rules apply
+          dateTimeElement.classList.add('tpi-formatted');
+          const fullText = dateTimeElement.textContent || '';
+          
+          // Get timezone from browser or event
+          const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          const timezoneAbbr = getTimezoneAbbreviation(timezone);
+          
+          // Pattern to find time: "4:30 – 5:00pm" or "12:00pm" or "4:30pm"
+          const timePatternWithDuration = /(\d+:\d+)\s*[–-]\s*\d+:\d+\s*(am|pm)/i;
+          const timePattern = /\d+:\d+\s*(am|pm)/i;
+          
+          let datePart = '';
+          let timePart = '';
+          
+          // Check if there's a duration pattern first
+          if (fullText.match(timePatternWithDuration)) {
+            const match = fullText.match(timePatternWithDuration);
+            if (match) {
+              const startTime = match[1]; // e.g., "4:30"
+              const amPm = match[2]; // e.g., "pm"
+              timePart = startTime + amPm + ' ' + timezoneAbbr;
+              
+              // Find where the time starts in the original text
+              const timeIndex = fullText.search(timePatternWithDuration);
+              datePart = fullText.substring(0, timeIndex).replace(/⋅/g, '').trim();
+            }
+          } else if (fullText.match(timePattern)) {
+            // Find where the time starts
+            const timeMatch = fullText.match(timePattern);
+            if (timeMatch) {
+              const timeIndex = fullText.search(timePattern);
+              datePart = fullText.substring(0, timeIndex).replace(/⋅/g, '').trim();
+              
+              // Check if timezone already exists
+              const timeText = fullText.substring(timeIndex).trim();
+              if (timeText.match(/[A-Z]{2,5}$/)) {
+                // Timezone already exists
+                timePart = timeText;
+              } else {
+                // Add timezone
+                timePart = timeText + ' ' + timezoneAbbr;
+              }
+            }
+          } else {
+            // No time pattern found, just clean up the text
+            datePart = fullText.replace(/⋅/g, '').trim();
+            timePart = '';
+          }
+          
+          // Clear the element and rebuild with separate spans
+          dateTimeElement.innerHTML = '';
+          
+          // Create date span
+          if (datePart) {
+            const dateSpan = document.createElement('span');
+            dateSpan.className = 'tpi-date-part';
+            dateSpan.textContent = datePart;
+            dateTimeElement.appendChild(dateSpan);
+          }
+          
+          // Create time span with spacing
+          if (timePart) {
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'tpi-time-part';
+            timeSpan.textContent = timePart;
+            timeSpan.style.setProperty('margin-left', '5.5em', 'important');
+            timeSpan.style.setProperty('display', 'inline-block', 'important');
+            dateTimeElement.appendChild(timeSpan);
+          }
+        }
+        
+        console.debug('TPI: Icon injected successfully in front of title', icon);
       });
+      
+      // Position action icons at bottom (with retries for dynamic content)
+      removeActionIcons(popup);
+      // Retry after delays to catch icons added dynamically
+      setTimeout(() => removeActionIcons(popup), 100);
+      setTimeout(() => removeActionIcons(popup), 300);
+      setTimeout(() => removeActionIcons(popup), 500);
+      
+      // Remove specific button element
+      removeSpecificButton(popup);
+      
+      // Set up observer to catch dynamically added action icons
+      observeActionIcons(popup);
       
       return true;
     }
     
-    // Try immediately
-    if (!doReplace()) {
-      // If not found, try with delays and MutationObserver
-      const observer = new MutationObserver(() => {
-        if (doReplace()) {
-          observer.disconnect();
-        }
+    // Position action icons at bottom of popup
+    // Direct approach: Position each icon individually at the bottom
+    function removeActionIcons(popup) {
+      if (!popup) return;
+      
+      // Ensure popup has position relative for absolute positioning
+      popup.style.setProperty('position', 'relative', 'important');
+      
+      // Find all action icon containers with class pYTkkf-Bz112c-RLmnJb
+      const actionContainers = popup.querySelectorAll('.pYTkkf-Bz112c-RLmnJb');
+      
+      console.debug('TPI: Found', actionContainers.length, 'action icon containers to position at bottom');
+      
+      if (actionContainers.length === 0) return;
+      
+      // Position each icon directly at the bottom
+      // Calculate right offset for each icon to arrange them horizontally
+      const iconSpacing = 40; // Space between icons
+      const rightOffset = 16; // Distance from right edge
+      
+      actionContainers.forEach((container, index) => {
+        // Make sure it's visible
+        container.style.setProperty('display', 'block', 'important');
+        container.style.setProperty('visibility', 'visible', 'important');
+        container.style.setProperty('opacity', '1', 'important');
+        container.style.setProperty('pointer-events', 'auto', 'important');
+        
+        // Position absolutely at bottom
+        container.style.setProperty('position', 'absolute', 'important');
+        container.style.setProperty('bottom', '16px', 'important');
+        
+        // Calculate right position for horizontal arrangement
+        // First icon is furthest right, subsequent icons go left
+        const calculatedRight = rightOffset + (index * iconSpacing);
+        container.style.setProperty('right', `${calculatedRight}px`, 'important');
+        
+        // Remove conflicting properties
+        container.style.setProperty('top', 'auto', 'important');
+        container.style.setProperty('left', 'auto', 'important');
+        container.style.setProperty('transform', 'none', 'important');
+        container.style.setProperty('z-index', '1000', 'important');
+      });
+    }
+    
+    // Set up MutationObserver to catch dynamically added action icons
+    function observeActionIcons(popup) {
+      if (!popup) return;
+      
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              // Check if the added node is an action icon
+              if (node.classList && node.classList.contains('pYTkkf-Bz112c-RLmnJb')) {
+                console.debug('TPI: Detected dynamically added action icon, positioning at bottom...');
+                // Small delay to ensure element is fully in DOM
+                setTimeout(() => removeActionIcons(popup), 50);
+              }
+              // Check if any child is an action icon
+              const actionIcons = node.querySelectorAll && node.querySelectorAll('.pYTkkf-Bz112c-RLmnJb');
+              if (actionIcons && actionIcons.length > 0) {
+                console.debug('TPI: Detected dynamically added action icons in subtree, positioning at bottom...');
+                // Small delay to ensure elements are fully in DOM
+                setTimeout(() => removeActionIcons(popup), 50);
+              }
+            }
+          });
+        });
       });
       
       observer.observe(popup, {
@@ -495,17 +838,232 @@
         subtree: true
       });
       
-      // Also try with delays
-      setTimeout(() => {
-        if (doReplace()) observer.disconnect();
-      }, 50);
-      setTimeout(() => {
-        if (doReplace()) observer.disconnect();
-      }, 200);
+      // Clean up observer after 10 seconds (popup should be fully loaded by then)
       setTimeout(() => {
         observer.disconnect();
-      }, 2000);
+      }, 10000);
     }
+    
+    // Remove specific button element
+    function removeSpecificButton(popup) {
+      if (!popup) return;
+      
+      // Try to find the element using the specific selector
+      const buttonDiv = popup.querySelector('#xDetDlg > div > div.Tnsqdc > div > div > div.pPTZAe > div:nth-child(1) > span > button > div');
+      
+      if (buttonDiv) {
+        console.debug('TPI: Found specific button element to remove');
+        try {
+          buttonDiv.remove();
+        } catch (e) {
+          // If remove fails, try parentElement.removeChild
+          if (buttonDiv.parentElement) {
+            try {
+              buttonDiv.parentElement.removeChild(buttonDiv);
+            } catch (e2) {
+              // If that fails, hide it completely
+              buttonDiv.style.setProperty('display', 'none', 'important');
+              buttonDiv.style.setProperty('visibility', 'hidden', 'important');
+              buttonDiv.style.setProperty('opacity', '0', 'important');
+              buttonDiv.style.setProperty('width', '0', 'important');
+              buttonDiv.style.setProperty('height', '0', 'important');
+              buttonDiv.style.setProperty('pointer-events', 'none', 'important');
+            }
+          }
+        }
+      } else {
+        // Also try finding by class combinations as fallback
+        const button = popup.querySelector('div.pPTZAe > div:nth-child(1) > span > button > div');
+        if (button) {
+          console.debug('TPI: Found button element by fallback selector, removing...');
+          try {
+            button.remove();
+          } catch (e) {
+            if (button.parentElement) {
+              try {
+                button.parentElement.removeChild(button);
+              } catch (e2) {
+                button.style.setProperty('display', 'none', 'important');
+                button.style.setProperty('visibility', 'hidden', 'important');
+                button.style.setProperty('opacity', '0', 'important');
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    // Inject icon in front of event title - specifically #rAECCd
+    async function injectIconInTitle() {
+      console.log('TPI: [DEBUG] injectIconInTitle called, popup:', popup);
+      
+      // Find the event title element - MUST be #rAECCd
+      const titleElement = popup.querySelector('#rAECCd');
+      if (!titleElement) {
+        console.warn('TPI: [DEBUG] Title element #rAECCd not found in popup');
+        console.log('TPI: [DEBUG] Popup HTML:', popup.innerHTML.substring(0, 500));
+        // Try alternative selectors
+        const altTitle = popup.querySelector('span[role="heading"]') || 
+                        popup.querySelector('.UfeRlc span');
+        if (altTitle) {
+          console.log('TPI: [DEBUG] Found alternative title element:', altTitle);
+        }
+        return false;
+      }
+      
+      console.log('TPI: [DEBUG] Found title element:', titleElement, 'Text:', titleElement.textContent);
+      
+      // Check if icon already exists in title
+      if (titleElement.querySelector('.tpi-title-icon')) {
+        console.log('TPI: [DEBUG] Icon already exists in title');
+        return true; // Already injected
+      }
+      
+      // Also check if icon is already a direct child (might have been inserted differently)
+      const existingIcon = Array.from(titleElement.childNodes).find(
+        node => node.nodeType === Node.ELEMENT_NODE && 
+        node.classList && 
+        node.classList.contains('tpi-title-icon')
+      );
+      if (existingIcon) {
+        console.log('TPI: [DEBUG] Icon already exists as direct child');
+        return true; // Already injected
+      }
+      
+      console.log('TPI: [DEBUG] Creating icon for title...');
+      
+      try {
+        // Create and inject icon
+        const icon = await createUmbrellaIcon(settings);
+        if (!icon) {
+          console.error('TPI: [DEBUG] Failed to create icon for title - createUmbrellaIcon returned null/undefined');
+          return false;
+        }
+        
+        console.log('TPI: [DEBUG] Icon created:', icon, 'Tag:', icon.tagName, 'Classes:', icon.className);
+        
+        // Style the icon for title
+        icon.style.setProperty('display', 'inline-block', 'important');
+        icon.style.setProperty('vertical-align', 'middle', 'important');
+        icon.style.setProperty('margin-right', '8px', 'important');
+        icon.style.setProperty('width', '20px', 'important');
+        icon.style.setProperty('height', '20px', 'important');
+        icon.style.setProperty('flex-shrink', '0', 'important');
+        icon.style.setProperty('visibility', 'visible', 'important');
+        icon.style.setProperty('opacity', '1', 'important');
+        // CRITICAL: Remove tpi-umbrella-icon class FIRST before adding tpi-title-icon
+        // This prevents the removal code from deleting our icon
+        icon.classList.remove('tpi-popup-umbrella-icon', 'tpi-umbrella-icon');
+        icon.classList.add('tpi-title-icon');
+        // Double-check: ensure it doesn't have the problematic class
+        if (icon.classList.contains('tpi-umbrella-icon')) {
+          console.warn('TPI: [DEBUG] Icon still has tpi-umbrella-icon class after removal!');
+          icon.classList.remove('tpi-umbrella-icon');
+        }
+        
+        // For SVG elements, ensure proper sizing
+        const svgElement = icon.tagName === 'svg' ? icon : icon.querySelector('svg');
+        if (svgElement) {
+          console.log('TPI: [DEBUG] Found SVG element, setting attributes');
+          svgElement.setAttribute('width', '20');
+          svgElement.setAttribute('height', '20');
+          svgElement.style.setProperty('width', '20px', 'important');
+          svgElement.style.setProperty('height', '20px', 'important');
+          svgElement.style.setProperty('display', 'inline-block', 'important');
+          svgElement.style.setProperty('vertical-align', 'middle', 'important');
+          svgElement.style.setProperty('visibility', 'visible', 'important');
+          svgElement.style.setProperty('opacity', '1', 'important');
+        } else {
+          console.warn('TPI: [DEBUG] No SVG element found in icon');
+        }
+        
+        // Set icon color to white for visibility
+        icon.style.setProperty('color', '#ffffff', 'important');
+        const svgForColor = icon.tagName === 'svg' ? icon : icon.querySelector('svg');
+        if (svgForColor) {
+          svgForColor.style.setProperty('color', '#ffffff', 'important');
+          svgForColor.style.setProperty('fill', '#ffffff', 'important');
+          const paths = svgForColor.querySelectorAll('path, circle, line, rect, polygon');
+          console.log('TPI: [DEBUG] Found', paths.length, 'paths in SVG');
+          paths.forEach(path => {
+            const fill = path.getAttribute('fill');
+            const stroke = path.getAttribute('stroke');
+            if (fill && fill !== 'none' && fill !== 'transparent') {
+              path.setAttribute('fill', '#ffffff');
+            }
+            if (stroke && stroke !== 'none' && stroke !== 'transparent') {
+              path.setAttribute('stroke', '#ffffff');
+            }
+          });
+        }
+        
+        // Insert icon at the very beginning of title element
+        // The span contains text, so we insert the icon before any text nodes
+        console.log('TPI: [DEBUG] Inserting icon into title element. First child:', titleElement.firstChild);
+        if (titleElement.firstChild) {
+          titleElement.insertBefore(icon, titleElement.firstChild);
+        } else {
+          titleElement.appendChild(icon);
+        }
+        
+        console.log('TPI: [DEBUG] Icon injected successfully! Title HTML:', titleElement.innerHTML.substring(0, 200));
+        console.log('TPI: [DEBUG] Icon computed styles:', window.getComputedStyle(icon).display, 
+                    window.getComputedStyle(icon).visibility, 
+                    window.getComputedStyle(icon).opacity);
+        
+        return true;
+      } catch (err) {
+        console.error('TPI: [DEBUG] Error injecting icon in title', err);
+        return false;
+      }
+    }
+    
+    // Title icon injection disabled - only showing the large icon on the left
+    // let titleInjected = false;
+    // async function tryInjectTitle() {
+    //   if (!titleInjected) {
+    //     const result = await injectIconInTitle();
+    //     if (result) {
+    //       titleInjected = true;
+    //     }
+    //   }
+    // }
+    
+    // Try immediately
+    // tryInjectTitle();
+    
+    // Also try with delays in case element isn't ready
+    // setTimeout(tryInjectTitle, 50);
+    // setTimeout(tryInjectTitle, 100);
+    // setTimeout(tryInjectTitle, 200);
+    // setTimeout(tryInjectTitle, 500);
+    // setTimeout(tryInjectTitle, 1000);
+    
+    // Try immediately for the .xnWuge replacement
+    if (injectIcon()) {
+      return;
+    }
+    
+    // If parent container not found yet, use MutationObserver
+    const observer = new MutationObserver(() => {
+      // Try title injection on every mutation
+      tryInjectTitle();
+      
+      // Try .xnWuge replacement
+      if (injectIcon()) {
+        observer.disconnect();
+      }
+    });
+    
+    observer.observe(popup, {
+      childList: true,
+      subtree: true
+    });
+    
+    // Clean up observer after 5 seconds
+    setTimeout(() => {
+      observer.disconnect();
+    }, 5000);
   }
 
   // Inject large umbrella icon in popup where .xnWuge was
@@ -1032,14 +1590,16 @@
       }
     }
 
-    const thickness = settings.outlineThickness || 1;
+    const thickness = settings.outlineThickness || 0.5;
     const color = settings.outlineColor || '#ffffff';
 
     // Apply outline using multiple methods for better compatibility
-    eventElement.style.setProperty('box-shadow', `0 0 0 ${thickness}px ${color}`, 'important');
+    // Note: The pulsing glow animation is handled by CSS, so we only add the outline
+    // The CSS animation will handle the multi-color glow effect
     eventElement.style.setProperty('border', `${thickness}px solid ${color}`, 'important');
     eventElement.style.setProperty('outline', `${thickness}px solid ${color}`, 'important');
     eventElement.style.setProperty('outline-offset', `-${thickness}px`, 'important');
+    // Don't set box-shadow here - let CSS animation handle the pulsing glow
   }
 
   // Apply text color to event
@@ -1091,11 +1651,16 @@
   let observer;
   
   function startObserving() {
+    console.log('TPI: [DEBUG] startObserving called');
     if (observer) {
       observer.disconnect();
     }
 
     observer = new MutationObserver((mutations) => {
+      // Log when mutations are detected
+      if (mutations.length > 0) {
+        console.log('TPI: [DEBUG] MutationObserver triggered, mutations:', mutations.length);
+      }
       let shouldProcess = false;
       let hasEventNodes = false;
       let needsColorReapply = false;
@@ -1124,318 +1689,55 @@
         }
         
         // Check if popup opened (when .hMdQi appears)
+        // Check both addedNodes and the subtree of added nodes
         if (mutation.addedNodes.length > 0) {
           for (let node of mutation.addedNodes) {
             if (node.nodeType === 1) { // Element node
-               // Check if popup opened
-               if (node.classList && node.classList.contains('hMdQi')) {
-                 // Popup opened - re-apply colors to all processed events
-                 setTimeout(() => {
-                   reapplyColorsToProcessedEvents();
+              // Check if this node itself is the popup
+              let popupElement = null;
+              if (node.classList && node.classList.contains('hMdQi')) {
+                popupElement = node;
+              } else {
+                // Check if popup is in the subtree of this node
+                popupElement = node.querySelector && node.querySelector('.hMdQi');
+              }
+              
+              if (popupElement) {
+                console.log('TPI: [DEBUG] POPUP DETECTED!', popupElement);
+                // Popup opened - re-apply colors to all processed events
+                setTimeout(() => {
+                  console.log('TPI: [DEBUG] Inside setTimeout, loading settings...');
+                  reapplyColorsToProcessedEvents();
                    
-                   // Replace .xnWuge with SVG icon
-                   const popup = node;
-                   loadSettings().then(settings => {
-                     replaceXnWugeWithIcon(popup, settings);
-                   });
-                   
-                   // Remove any umbrella icons from popup - icons only show on event bars
-                   // Remove all possible icon variations - be very aggressive
-                   const existingIcons = popup.querySelectorAll('.tpi-popup-umbrella-icon, .tpi-umbrella-icon');
-                   existingIcons.forEach(icon => icon.remove());
-                   
-                   // Also check for any SVG elements that might be umbrella icons
-                   const allSvgs = popup.querySelectorAll('svg');
-                   allSvgs.forEach(svg => {
-                     const parent = svg.parentElement;
-                     if (parent && (parent.classList.contains('tpi-popup-umbrella-icon') || 
-                         parent.classList.contains('tpi-umbrella-icon') ||
-                         parent.classList.contains('tpi-far-right-icon') ||
-                         parent.classList.contains('tpi-far-left-icon'))) {
-                       parent.remove();
-                     }
-                   });
-                   
-                   // Hide specific popup content: description, notes, and attendees
-                   function hidePopupContent() {
-                     // Hide description: "Transparent Insurance health consultation."
-                     // Target span with jscontroller="BlntMb" containing the text
-                     const descriptionSpans = popup.querySelectorAll('span[jscontroller="BlntMb"]');
-                     descriptionSpans.forEach(span => {
-                       if (span.textContent && span.textContent.includes('Transparent Insurance health consultation')) {
-                         span.style.display = 'none';
-                         span.style.visibility = 'hidden';
-                       }
-                     });
-                     
-                     // Hide notes section: "Notes - Transparent Insurance — Robert Parkfield"
-                     // Target div with id="xDetDlgAtm" or span with class "PdReTd rEYZee"
-                     const notesDiv = popup.querySelector('#xDetDlgAtm');
-                     if (notesDiv) {
-                       notesDiv.style.display = 'none';
-                       notesDiv.style.visibility = 'hidden';
-                     }
-                     
-                     const notesSpans = popup.querySelectorAll('span.PdReTd.rEYZee');
-                     notesSpans.forEach(span => {
-                       if (span.textContent && span.textContent.includes('Notes - Transparent Insurance')) {
-                         // Hide the parent container (the entire notes section)
-                         let parent = span.closest('.toUqff');
-                         if (parent) {
-                           parent.style.display = 'none';
-                           parent.style.visibility = 'hidden';
-                         } else {
-                           span.style.display = 'none';
-                           span.style.visibility = 'hidden';
-                         }
-                       }
-                     });
-                     
-                     // Hide attendee: "Link Pellow" but NOT the organizer section
-                     // The organizer section has id="xDetDlgCal" and contains "Organizer: Link Pellow"
-                     // Only hide attendee sections, not organizer sections
-                     const attendeeDivs = popup.querySelectorAll('div.Fh4HL');
-                     attendeeDivs.forEach(div => {
-                       if (div.textContent && div.textContent.trim() === 'Link Pellow') {
-                         // Check if this is in an organizer section - if so, don't hide it
-                         const organizerContainer = div.closest('#xDetDlgCal');
-                         const hasOrganizerText = div.closest('.nBzcnc.OcVpRe')?.textContent?.includes('Organizer');
-                         
-                         // Only hide if it's NOT in the organizer section
-                         if (!organizerContainer && !hasOrganizerText) {
-                           div.style.display = 'none';
-                           div.style.visibility = 'hidden';
-                         }
-                       }
-                     });
-                     
-                     // Hide attendee containers but preserve organizer container
-                     const allContainers = popup.querySelectorAll('div.nBzcnc.OcVpRe');
-                     allContainers.forEach(container => {
-                       const containerText = container.textContent || '';
-                       const isOrganizer = container.querySelector('#xDetDlgCal') || 
-                                          containerText.includes('Organizer:') ||
-                                          container.id === 'xDetDlgCal';
-                       
-                       // Only hide if it contains "Link Pellow" but is NOT the organizer section
-                       if (containerText.includes('Link Pellow') && !isOrganizer) {
-                         container.style.setProperty('display', 'none', 'important');
-                         container.style.setProperty('visibility', 'hidden', 'important');
-                       }
-                     });
-                     
-                     // Hide specific icon elements: notes, drive, and event icons
-                     // Target icons directly by their classes and text content
-                     
-                     // Hide notes icon (giSqbe class)
-                     const notesIcons = popup.querySelectorAll('i.google-material-icons.giSqbe, i.google-material-icons.giSqbe.MpJKQd');
-                     notesIcons.forEach(icon => {
-                       if (icon.textContent && icon.textContent.trim() === 'notes') {
-                         const container = icon.closest('div.zZj8Pb.EaVNbc');
-                         if (container) {
-                           container.style.setProperty('display', 'none', 'important');
-                           container.style.setProperty('visibility', 'hidden', 'important');
-                           container.style.setProperty('opacity', '0', 'important');
-                         }
-                         icon.style.setProperty('display', 'none', 'important');
-                         icon.style.setProperty('visibility', 'hidden', 'important');
-                       }
-                     });
-                     
-                     // Hide drive icon (imyxFc class)
-                     const driveIcons = popup.querySelectorAll('i.google-material-icons.imyxFc');
-                     driveIcons.forEach(icon => {
-                       if (icon.textContent && icon.textContent.trim() === 'drive') {
-                         const container = icon.closest('div.zZj8Pb.EaVNbc');
-                         if (container) {
-                           container.style.setProperty('display', 'none', 'important');
-                           container.style.setProperty('visibility', 'hidden', 'important');
-                           container.style.setProperty('opacity', '0', 'important');
-                         }
-                         icon.style.setProperty('display', 'none', 'important');
-                         icon.style.setProperty('visibility', 'hidden', 'important');
-                       }
-                     });
-                     
-                     // Hide event icon (MpJKQd without giSqbe or imyxFc)
-                     const eventIcons = popup.querySelectorAll('i.google-material-icons.MpJKQd:not(.giSqbe):not(.imyxFc)');
-                     eventIcons.forEach(icon => {
-                       if (icon.textContent && icon.textContent.trim() === 'event') {
-                         const container = icon.closest('div.zZj8Pb.EaVNbc');
-                         if (container) {
-                           container.style.setProperty('display', 'none', 'important');
-                           container.style.setProperty('visibility', 'hidden', 'important');
-                           container.style.setProperty('opacity', '0', 'important');
-                         }
-                         icon.style.setProperty('display', 'none', 'important');
-                         icon.style.setProperty('visibility', 'hidden', 'important');
-                       }
-                     });
-                     
-                     // Also check all icon containers by text content as fallback
-                     const allIconContainers = popup.querySelectorAll('div.zZj8Pb.EaVNbc');
-                     allIconContainers.forEach(container => {
-                       const icon = container.querySelector('i.google-material-icons');
-                       if (icon) {
-                         const iconText = icon.textContent || icon.innerText || '';
-                         const trimmedText = iconText.trim();
-                         if (trimmedText === 'notes' || trimmedText === 'drive' || trimmedText === 'event') {
-                           container.style.setProperty('display', 'none', 'important');
-                           container.style.setProperty('visibility', 'hidden', 'important');
-                           container.style.setProperty('opacity', '0', 'important');
-                         }
-                       }
-                     });
-                     
-                     // Move reminder section ("30 minutes before") up
-                     function moveReminderUp() {
-                       // Find all elements containing "30 minutes before"
-                       const allElements = popup.querySelectorAll('div, span, p');
-                       allElements.forEach(el => {
-                         const text = el.textContent || '';
-                         if (text.trim() === '30 minutes before' || 
-                             (text.includes('30 minutes before') && 
-                              !text.includes('Link Pellow') &&
-                              !text.includes('Notes -'))) {
-                           // Find the parent container that holds the reminder and bell icon
-                           let reminderContainer = el;
-                           let foundContainer = false;
-                           
-                           // Go up to find a suitable container
-                           for (let i = 0; i < 5 && reminderContainer && reminderContainer !== popup; i++) {
-                             const parent = reminderContainer.parentElement;
-                             if (parent) {
-                               // Check if this parent contains the bell icon
-                               const hasBellIcon = parent.querySelector('i.google-material-icons[aria-hidden="true"]');
-                               const containerText = parent.textContent || '';
-                               
-                               // If this container has the bell icon and reminder text, move it up
-                               if (hasBellIcon && containerText.includes('30 minutes before') &&
-                                   !containerText.includes('Link Pellow') &&
-                                   !containerText.includes('Notes -')) {
-                                 parent.style.setProperty('margin-top', '-60px', 'important');
-                                 parent.style.setProperty('position', 'relative', 'important');
-                                 foundContainer = true;
-                                 break;
-                               }
-                               reminderContainer = parent;
-                             } else {
-                               break;
-                             }
-                           }
-                           
-                           // If we didn't find a container with bell icon, just move the element itself
-                           if (!foundContainer) {
-                             el.style.setProperty('margin-top', '-60px', 'important');
-                             el.style.setProperty('position', 'relative', 'important');
-                           }
-                         }
-                       });
-                     }
-                     
-                     moveReminderUp();
-                     
-                     // Break event title so "— Robert Parkfield" appears on new line
-                     function breakEventTitle() {
-                       // Find the event title element
-                       const titleElements = popup.querySelectorAll('.UfeRlc, .UfeRlc span[role="heading"], #rAECCd');
-                       titleElements.forEach(titleEl => {
-                         const text = titleEl.textContent || titleEl.innerText || '';
-                         if (text.includes('Transparent Insurance — Robert Parkfield')) {
-                           // Replace " — " with a line break before the dash
-                           const newText = text.replace(' — ', '\n— ');
-                           titleEl.textContent = newText;
-                           titleEl.style.setProperty('white-space', 'pre-line', 'important');
-                           titleEl.style.setProperty('word-break', 'break-word', 'important');
-                         }
-                       });
-                       
-                       // Also check all text nodes within title containers
-                       const titleContainers = popup.querySelectorAll('.UfeRlc, #rAECCd');
-                       titleContainers.forEach(container => {
-                         const walker = document.createTreeWalker(
-                           container,
-                           NodeFilter.SHOW_TEXT,
-                           null,
-                           false
-                         );
-                         
-                         let node;
-                         while (node = walker.nextNode()) {
-                           if (node.textContent && node.textContent.includes('Transparent Insurance — Robert Parkfield')) {
-                             const newText = node.textContent.replace(' — ', '\n— ');
-                             node.textContent = newText;
-                             // Set parent to use pre-line
-                             if (node.parentElement) {
-                               node.parentElement.style.setProperty('white-space', 'pre-line', 'important');
-                               node.parentElement.style.setProperty('word-break', 'break-word', 'important');
-                             }
-                           }
-                         }
-                       });
-                     }
-                     
-                     breakEventTitle();
-                     
-                     // Remove padding between event title and date/time
-                     function removeTitlePadding() {
-                       // Find the date/time element and remove its top margin/padding
-                       const dateElements = popup.querySelectorAll('.AzuXid');
-                       dateElements.forEach(dateEl => {
-                         dateEl.style.setProperty('margin-top', '0', 'important');
-                         dateEl.style.setProperty('padding-top', '0', 'important');
-                       });
-                       
-                       // Find the title element and remove its bottom margin/padding
-                       const titleElements = popup.querySelectorAll('.UfeRlc, #rAECCd');
-                       titleElements.forEach(titleEl => {
-                         titleEl.style.setProperty('margin-bottom', '0', 'important');
-                         titleEl.style.setProperty('padding-bottom', '0', 'important');
-                       });
-                       
-                       // Also check parent containers
-                       const titleContainers = popup.querySelectorAll('.UfeRlc, #rAECCd');
-                       titleContainers.forEach(container => {
-                         const nextSibling = container.nextElementSibling;
-                         if (nextSibling && nextSibling.classList.contains('AzuXid')) {
-                           nextSibling.style.setProperty('margin-top', '0', 'important');
-                           nextSibling.style.setProperty('padding-top', '0', 'important');
-                         }
-                       });
-                     }
-                     
-                     removeTitlePadding();
-                   }
-                   
-                   // Hide content immediately
-                   hidePopupContent();
-                   
-                   // Use MutationObserver to continuously remove icons and hide content
-                   const iconObserver = new MutationObserver(() => {
-                     const newIcons = popup.querySelectorAll('.tpi-popup-umbrella-icon, .tpi-umbrella-icon, .tpi-far-right-icon, .tpi-far-left-icon');
-                     newIcons.forEach(icon => icon.remove());
-                     // Re-hide content in case it gets re-added
-                     hidePopupContent();
-                   });
-                   
-                   iconObserver.observe(popup, {
-                     childList: true,
-                     subtree: true
-                   });
-                   
-                   // Store observer to disconnect when popup closes
-                   popup._tpiIconObserver = iconObserver;
-                   
-                   // Also specifically find and re-apply color to the event that opened the popup
-                  const eventId = node.querySelector('[data-eventid]')?.getAttribute('data-eventid');
-                  if (eventId) {
-                    const eventElement = document.querySelector(`[data-eventid="${eventId}"]`);
-                    if (eventElement && eventElement.hasAttribute('data-tpi-color')) {
-                      const color = eventElement.getAttribute('data-tpi-color');
-                      applyColorToEvent(eventElement, color);
-                    }
-                  }
-                }, 50);
+                  // Inject SVG icon where .xnWuge was
+                  const popup = popupElement;
+                  loadSettings().then(settings => {
+                    console.log('TPI: [DEBUG] Settings loaded, injecting icon...', settings);
+                    // Remove old icons FIRST, before injecting new ones
+                    // This prevents race conditions
+                    const existingIcons = popup.querySelectorAll('.tpi-popup-umbrella-icon, .tpi-umbrella-icon');
+                    console.log('TPI: [DEBUG] Found', existingIcons.length, 'existing icons to check');
+                    existingIcons.forEach(icon => {
+                      // Don't remove title icon or xnWuge replacement
+                      if (!icon.classList.contains('tpi-title-icon') && 
+                          !icon.classList.contains('tpi-xnwuge-replacement')) {
+                        icon.remove();
+                      }
+                    });
+                    
+                    // Now inject the new icons
+                    console.log('TPI: [DEBUG] Calling injectIconInXnWugeLocation...');
+                    injectIconInXnWugeLocation(popup, settings);
+                    
+                    // Hide "30 minutes before", "Link Pellow", and notification bell
+                    hideReminderAndAttendee(popup);
+                    
+                    // Remove specific button element
+                    removeSpecificButton(popup);
+                  }).catch(err => {
+                    console.error('TPI: [DEBUG] Error loading settings:', err);
+                  });
+                }, 100); // Small delay to ensure popup is fully rendered
               }
               
               // Check if any added nodes are likely calendar events
@@ -1444,33 +1746,59 @@
                   node.classList && (node.classList.contains('QZVPzb') || 
                   node.classList.contains('GTG3wb')))) {
                 hasEventNodes = true;
-                break;
               }
             }
           }
-          if (hasEventNodes || mutation.addedNodes.length > 0) {
-            shouldProcess = true;
+        }
+        
+        // Also check if popup class was added via attribute mutation
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          const target = mutation.target;
+          if (target && target.classList && target.classList.contains('hMdQi')) {
+            // Check if we haven't already processed this popup
+            if (!target.hasAttribute('data-tpi-popup-processed')) {
+              console.log('TPI: [DEBUG] POPUP DETECTED via class mutation!', target);
+              target.setAttribute('data-tpi-popup-processed', 'true');
+              setTimeout(() => {
+                console.log('TPI: [DEBUG] Inside setTimeout (class mutation), loading settings...');
+                reapplyColorsToProcessedEvents();
+                 
+                const popup = target;
+                loadSettings().then(settings => {
+                  console.log('TPI: [DEBUG] Settings loaded (class mutation), injecting icon...', settings);
+                  const existingIcons = popup.querySelectorAll('.tpi-popup-umbrella-icon, .tpi-umbrella-icon');
+                  console.log('TPI: [DEBUG] Found', existingIcons.length, 'existing icons to check (class mutation)');
+                  existingIcons.forEach(icon => {
+                    if (!icon.classList.contains('tpi-title-icon') && 
+                        !icon.classList.contains('tpi-xnwuge-replacement')) {
+                      icon.remove();
+                    }
+                  });
+                  
+                  console.log('TPI: [DEBUG] Calling injectIconInXnWugeLocation (class mutation)...');
+                  injectIconInXnWugeLocation(popup, settings);
+                  
+                  // Hide "30 minutes before", "Link Pellow", and notification bell
+                  hideReminderAndAttendee(popup);
+                  
+                  // Remove specific button element
+                  removeSpecificButton(popup);
+                }).catch(err => {
+                  console.error('TPI: [DEBUG] Error loading settings (class mutation):', err);
+                });
+              }, 100);
+            }
           }
         }
       });
       
-      if (shouldProcess) {
-        // Process immediately if we detect event nodes, otherwise debounce
-        if (hasEventNodes) {
-          // Process immediately for event nodes
+      // Process events if needed
+      if (shouldProcess || hasEventNodes || needsColorReapply) {
+        // Debounce for other DOM changes
+        clearTimeout(window.tpiProcessTimeout);
+        window.tpiProcessTimeout = setTimeout(() => {
           processCalendarEvents();
-          // Also set a debounce for any additional changes
-          clearTimeout(window.tpiProcessTimeout);
-          window.tpiProcessTimeout = setTimeout(() => {
-            processCalendarEvents();
-          }, 100);
-        } else {
-          // Debounce for other DOM changes
-          clearTimeout(window.tpiProcessTimeout);
-          window.tpiProcessTimeout = setTimeout(() => {
-            processCalendarEvents();
-          }, 200);
-        }
+        }, 200);
       }
     });
 
@@ -1504,6 +1832,7 @@
 
   // Initialize when page loads
   function init() {
+    console.log('TPI: [DEBUG] init() called - starting observer');
     // Start observing immediately
     startObserving();
     

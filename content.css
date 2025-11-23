@@ -1,0 +1,379 @@
+/* TPI - Additional styles for calendar events */
+
+[data-tpi-color] {
+  transition: background-color 0.3s ease, border-color 0.3s ease !important;
+}
+
+/* Persist colors using CSS custom properties - this helps maintain colors when styles are reset */
+[data-tpi-color] {
+  background-color: var(--tpi-event-color) !important;
+  border-color: var(--tpi-event-color) !important;
+  border-radius: 12px !important; /* Increased border radius for rounded corners */
+}
+
+/* Also apply to color indicators */
+[data-tpi-color] .jSrjCf {
+  background-color: var(--tpi-event-color) !important;
+}
+
+[data-tpi-color] .QZVPzb .jSrjCf {
+  background-color: var(--tpi-event-color) !important;
+}
+
+/* Ensure color changes are visible */
+[data-tpi-processed] {
+  position: relative;
+  box-sizing: border-box !important; /* Ensure padding doesn't expand width */
+}
+
+/* Prevent events with icons from expanding beyond their original width */
+[data-tpi-processed].tpi-colored-event,
+[data-tpi-processed][data-tpi-color] {
+  max-width: 100% !important;
+  overflow: visible !important; /* Allow icon to be visible even if slightly outside */
+}
+
+/* Target Google Calendar events with our color */
+.tpi-colored-event {
+  transition: background-color 0.3s ease, border-color 0.3s ease !important;
+  border-radius: 12px !important; /* Increased border radius for rounded corners */
+}
+
+/* Outline styles are now applied dynamically via JavaScript based on user settings */
+
+/* Override Google Calendar's default event colors */
+.tpi-colored-event[style*="background"],
+.tpi-colored-event[style*="border"] {
+  transition: all 0.3s ease !important;
+}
+
+/* Target the specific Google Calendar color indicator */
+.QZVPzb .jSrjCf,
+.jSrjCf {
+  transition: background-color 0.3s ease !important;
+}
+
+/* Umbrella icon styling - ensure it's NOT white */
+.tpi-umbrella-icon {
+  display: inline-block !important;
+  vertical-align: middle !important;
+  margin-right: 4px !important;
+  width: 14px !important;
+  height: 14px !important;
+  flex-shrink: 0 !important;
+  color: #202124 !important;
+}
+
+/* Far-left icon positioning (for event bars) */
+.tpi-far-left-icon {
+  position: absolute !important;
+  left: 8px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 20px !important;
+  height: 20px !important;
+  display: block !important;
+  z-index: 10 !important;
+  pointer-events: none !important;
+  margin: 0 !important;
+}
+
+.tpi-far-left-icon svg {
+  width: 20px !important;
+  height: 20px !important;
+  display: block !important;
+}
+
+/* Far-right icon positioning (for event bars) - kept for backward compatibility */
+.tpi-far-right-icon {
+  position: absolute !important;
+  right: 20px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 20px !important;
+  height: 20px !important;
+  display: block !important;
+  z-index: 10 !important;
+  pointer-events: none !important;
+  margin: 0 !important;
+}
+
+.tpi-far-right-icon svg {
+  width: 20px !important;
+  height: 20px !important;
+  display: block !important;
+}
+
+.tpi-umbrella-icon svg,
+.tpi-umbrella-icon svg path,
+.tpi-umbrella-icon svg circle,
+.tpi-umbrella-icon svg line {
+  color: #202124 !important;
+  fill: #202124 !important;
+  stroke: #202124 !important;
+}
+
+/* Make text readable in event details popup when background is colored */
+/* Target event detail dialog containers */
+.hMdQi,
+.hMdQi .nBzcnc,
+.hMdQi .toUqff {
+  color: #202124 !important;
+}
+
+/* Match the popup's border-radius on the colored background element */
+/* Google Calendar popups typically use 8px border-radius */
+.hMdQi {
+  overflow: hidden !important; /* Ensure child elements respect the border-radius */
+  /* Add inset box-shadow outline - respects border-radius, doesn't affect layout */
+  box-shadow: inset 0 0 0 2px #00d9ff !important; /* Bright cyan outline to match theme */
+}
+
+/* Hide umbrella icons in popup - icons only show on event bars */
+.hMdQi .tpi-popup-umbrella-icon,
+.hMdQi .tpi-umbrella-icon,
+.hMdQi .tpi-far-right-icon,
+.hMdQi .tpi-far-left-icon,
+.hMdQi [class*="tpi-popup-umbrella"],
+.hMdQi [class*="tpi-umbrella"],
+.hMdQi [class*="umbrella-icon"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+}
+
+/* Style .xnWuge with umbrella SVG background */
+/* JavaScript sets background-image dynamically - CSS only sets supporting properties */
+.hMdQi .xnWuge,
+.xnWuge {
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: contain !important;
+  /* background-color set by JS - don't override here */
+  -webkit-mask: none !important;
+  mask: none !important;
+}
+
+/* Apply the same border-radius to the colored background element to match the popup perfectly */
+/* JavaScript will dynamically set this to match the popup's actual border-radius */
+
+/* Ensure parent containers also respect border-radius */
+.hMdQi .zZj8Pb.EaVNbc {
+  overflow: hidden !important;
+}
+
+/* CRITICAL: Never apply outlines to popup elements - only to calendar event bars */
+.hMdQi,
+.hMdQi *,
+.hMdQi [data-tpi-color],
+.hMdQi [data-tpi-outline-enabled] {
+  box-shadow: none !important;
+  border: none !important;
+  outline: none !important;
+  outline-offset: 0 !important;
+}
+
+/* Event title/heading text */
+.hMdQi .UfeRlc,
+.hMdQi .UfeRlc span[role="heading"],
+.hMdQi #rAECCd,
+.hMdQi [data-text] {
+  color: #202124 !important;
+}
+
+/* Break event title so "— Robert Parkfield" appears on new line */
+.hMdQi .UfeRlc,
+.hMdQi .UfeRlc span[role="heading"],
+.hMdQi #rAECCd {
+  white-space: pre-line !important;
+  word-break: break-word !important;
+}
+
+/* Date and time text */
+.hMdQi .AzuXid,
+.hMdQi .AzuXid span {
+  color: #5f6368 !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* Remove padding/margin between event title and date/time */
+.hMdQi .UfeRlc + .AzuXid,
+.hMdQi .UfeRlc ~ .AzuXid,
+.hMdQi span[role="heading"] + .AzuXid,
+.hMdQi #rAECCd + .AzuXid {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* Also target the container that holds both title and date */
+.hMdQi .UfeRlc {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Hide description text - JavaScript will handle text matching */
+.hMdQi span[jscontroller="BlntMb"] {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Hide notes section */
+.hMdQi #xDetDlgAtm,
+.hMdQi .toUqff#xDetDlgAtm {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Hide notes text spans */
+.hMdQi span.PdReTd.rEYZee {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Hide attendee divs - JavaScript will filter by text content */
+/* DO NOT hide organizer sections - JavaScript handles this */
+
+/* Hide specific icon elements: notes, drive, and event icons */
+/* Target by icon classes - notes icon */
+.hMdQi i.google-material-icons.giSqbe.MpJKQd,
+.hMdQi i.google-material-icons.giSqbe {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Drive icon */
+.hMdQi i.google-material-icons.imyxFc {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Event icon (MpJKQd without giSqbe or imyxFc) */
+.hMdQi i.google-material-icons.MpJKQd:not(.giSqbe):not(.imyxFc) {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Move reminder section ("30 minutes before") up - JavaScript will handle positioning */
+
+/* Description text - fallback */
+.hMdQi .XuJrye,
+.hMdQi #xDetDlgDesc,
+.hMdQi #xDetDlgDesc span {
+  color: #202124 !important;
+}
+
+/* All text elements in event details */
+.hMdQi * {
+  color: inherit !important;
+}
+
+/* Specific text elements that should be dark */
+.hMdQi span,
+.hMdQi div,
+.hMdQi p,
+.hMdQi a {
+  color: #202124 !important;
+}
+
+/* Links should be bright cyan */
+.hMdQi a.UCosIb,
+.hMdQi a.a1YAZe {
+  color: #00d9ff !important; /* Bright cyan */
+}
+
+.hMdQi a.UCosIb:hover,
+.hMdQi a.a1YAZe:hover {
+  color: #00b8e6 !important; /* Slightly darker cyan on hover */
+}
+
+/* Make top toolbar icons white - target specific button classes */
+.hMdQi .pYTkkf-Bz112c-LgbsSe svg,
+.hMdQi .pYTkkf-Bz112c-LgbsSe svg path,
+.hMdQi .pYTkkf-Bz112c-kBDsod-Rtc0Jf svg,
+.hMdQi .pYTkkf-Bz112c-kBDsod-Rtc0Jf svg path,
+.hMdQi button[aria-label="Options"] svg,
+.hMdQi button[aria-label="Options"] svg path,
+.hMdQi button[aria-label*="Edit"] svg,
+.hMdQi button[aria-label*="Delete"] svg,
+.hMdQi button[aria-label*="Close"] svg,
+.hMdQi button[aria-label*="Mail"] svg,
+.hMdQi .pYTkkf-Bz112c-LgbsSe .google-material-icons,
+.hMdQi .pYTkkf-Bz112c-LgbsSe .NMm5M,
+.hMdQi .pYTkkf-Bz112c-LgbsSe .NMm5M path {
+  color: white !important;
+  fill: white !important;
+  stroke: white !important;
+}
+
+/* Make all other icons in popout white (except umbrella) */
+.hMdQi .google-material-icons:not(.tpi-umbrella-icon),
+.hMdQi i:not(.tpi-umbrella-icon),
+.hMdQi svg:not(.tpi-umbrella-icon),
+.hMdQi svg:not(.tpi-umbrella-icon) path,
+.hMdQi svg:not(.tpi-umbrella-icon) circle,
+.hMdQi svg:not(.tpi-umbrella-icon) line,
+.hMdQi svg:not(.tpi-umbrella-icon) polyline,
+.hMdQi svg:not(.tpi-umbrella-icon) polygon,
+.hMdQi svg:not(.tpi-umbrella-icon) rect,
+.hMdQi svg:not(.tpi-umbrella-icon) ellipse {
+  color: white !important;
+  fill: white !important;
+  stroke: white !important;
+}
+
+/* CRITICAL: Ensure umbrella icon keeps its original color and is NOT affected by white rules */
+.hMdQi .tpi-umbrella-icon,
+.hMdQi .tpi-umbrella-icon svg,
+.hMdQi .tpi-umbrella-icon svg path,
+.hMdQi .tpi-umbrella-icon svg circle,
+.hMdQi .tpi-umbrella-icon svg line,
+.hMdQi [data-tpi-color] .tpi-umbrella-icon,
+.hMdQi [data-tpi-color] .tpi-umbrella-icon svg,
+.hMdQi [data-tpi-color] .tpi-umbrella-icon svg path {
+  color: #202124 !important;
+  fill: #202124 !important;
+  stroke: #202124 !important;
+}
+
+/* Buttons and interactive elements */
+.hMdQi button,
+.hMdQi [role="button"] {
+  color: #202124 !important;
+}
+
+/* Override any light text colors that might be set */
+.hMdQi [style*="color: rgb(255"],
+.hMdQi [style*="color:rgb(255"],
+.hMdQi [style*="color: #fff"],
+.hMdQi [style*="color:#fff"],
+.hMdQi [style*="color: white"] {
+  color: #202124 !important;
+}
+
+/* All icons in event popout are now white (handled by the general rule above) */
+/* Specific targeting for better coverage */
+.hMdQi button svg,
+.hMdQi [role="button"] svg,
+.hMdQi a svg,
+.hMdQi [jsaction] svg {
+  color: white !important;
+  fill: white !important;
+  stroke: white !important;
+}
+
+/* Document, menu, bell, calendar and all other icons */
+.hMdQi [class*="icon"] svg,
+.hMdQi [class*="Icon"] svg,
+.hMdQi .google-material-icons,
+.hMdQi i.google-material-icons {
+  color: white !important;
+  fill: white !important;
+}
+

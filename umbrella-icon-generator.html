@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Umbrella Icon Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #1a73e8;
+      margin-bottom: 20px;
+    }
+    .icon-preview {
+      display: inline-block;
+      margin: 10px;
+      text-align: center;
+    }
+    canvas {
+      border: 1px solid #ddd;
+      margin: 5px;
+      background: white;
+    }
+    button {
+      background: #1a73e8;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 5px;
+    }
+    button:hover {
+      background: #1765cc;
+    }
+    #svgPreview {
+      max-width: 200px;
+      margin: 20px 0;
+      border: 1px solid #ddd;
+      background: white;
+    }
+    .error {
+      color: red;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Umbrella Icon Generator</h1>
+    <p>Generate extension icons from UMBRELLA.svg. Click "Download All Icons" to create all three required sizes.</p>
+    
+    <div>
+      <input type="file" id="svgFile" accept=".svg" />
+      <button onclick="loadSVG()">Load SVG</button>
+      <button onclick="downloadAll()">Download All Icons</button>
+    </div>
+
+    <div id="error" class="error"></div>
+
+    <div id="svgPreview"></div>
+
+    <div id="preview">
+      <div class="icon-preview">
+        <canvas id="icon16" width="16" height="16"></canvas>
+        <div>16x16</div>
+      </div>
+      <div class="icon-preview">
+        <canvas id="icon48" width="48" height="48"></canvas>
+        <div>48x48</div>
+      </div>
+      <div class="icon-preview">
+        <canvas id="icon128" width="128" height="128"></canvas>
+        <div>128x128</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let svgContent = null;
+    let svgImage = null;
+
+    function loadSVG() {
+      const fileInput = document.getElementById('svgFile');
+      const file = fileInput.files[0];
+      
+      if (!file) {
+        // Try to load UMBRELLA.svg from the same directory
+        fetch('UMBRELLA.svg')
+          .then(response => response.text())
+          .then(svg => {
+            svgContent = svg;
+            renderSVG(svg);
+          })
+          .catch(err => {
+            document.getElementById('error').textContent = 'Could not load UMBRELLA.svg. Please select the SVG file manually.';
+          });
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        svgContent = e.target.result;
+        renderSVG(svgContent);
+      };
+      reader.readAsText(file);
+    }
+
+    function renderSVG(svg) {
+      const preview = document.getElementById('svgPreview');
+      preview.innerHTML = svg;
+      
+      // Create an image from the SVG
+      const img = new Image();
+      const blob = new Blob([svg], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      
+      img.onload = function() {
+        svgImage = img;
+        generateIcons();
+        URL.revokeObjectURL(url);
+      };
+      
+      img.onerror = function() {
+        document.getElementById('error').textContent = 'Error loading SVG. Make sure it\'s a valid SVG file.';
+      };
+      
+      img.src = url;
+    }
+
+    function generateIcons() {
+      if (!svgImage) {
+        document.getElementById('error').textContent = 'Please load an SVG file first.';
+        return;
+      }
+
+      const sizes = [16, 48, 128];
+      sizes.forEach(size => {
+        const canvas = document.getElementById(`icon${size}`);
+        const ctx = canvas.getContext('2d');
+        
+        // Clear canvas
+        ctx.clearRect(0, 0, size, size);
+        
+        // Draw white background
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, size, size);
+        
+        // Calculate scaling to fit SVG in canvas with padding
+        const padding = size * 0.1;
+        const maxWidth = size - (padding * 2);
+        const maxHeight = size - (padding * 2);
+        
+        const scale = Math.min(maxWidth / svgImage.width, maxHeight / svgImage.height);
+        const scaledWidth = svgImage.width * scale;
+        const scaledHeight = svgImage.height * scale;
+        
+        const x = (size - scaledWidth) / 2;
+        const y = (size - scaledHeight) / 2;
+        
+        // Draw the SVG image
+        ctx.drawImage(svgImage, x, y, scaledWidth, scaledHeight);
+      });
+    }
+
+    function downloadCanvas(canvas, filename) {
+      canvas.toBlob(function(blob) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+    }
+
+    function downloadAll() {
+      if (!svgImage) {
+        document.getElementById('error').textContent = 'Please load an SVG file first.';
+        return;
+      }
+
+      generateIcons();
+      
+      setTimeout(() => {
+        downloadCanvas(document.getElementById('icon16'), 'icon16.png');
+        setTimeout(() => {
+          downloadCanvas(document.getElementById('icon48'), 'icon48.png');
+          setTimeout(() => {
+            downloadCanvas(document.getElementById('icon128'), 'icon128.png');
+          }, 200);
+        }, 200);
+      }, 200);
+    }
+
+    // Try to auto-load on page load
+    window.onload = function() {
+      loadSVG();
+    };
+  </script>
+</body>
+</html>
+

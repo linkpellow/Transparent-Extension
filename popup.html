@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transparent Insurance — Agent Extension</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="UMBRELLA.svg" alt="Umbrella Icon" class="header-icon" />
+    </div>
+
+    <div class="section" id="elementPickerSection">
+      <label class="toggle-label">
+        <input type="checkbox" id="elementPickerToggle" class="toggle">
+        <span class="toggle-slider"></span>
+        <span class="toggle-text">Element Picker</span>
+      </label>
+      <p class="hint">Click to enable element selection mode. Then click any element in the event popup to modify it.</p>
+      
+      <div id="elementPickerOptions" style="display: none; margin-top: 12px;">
+        <div class="picker-status" id="pickerStatus">
+          <span id="pickerStatusText">Click "Start Picking" to begin selecting elements</span>
+        </div>
+        <button id="startPickingBtn" class="button button-primary" style="margin-top: 8px;">Start Picking</button>
+        <button id="stopPickingBtn" class="button button-secondary" style="margin-top: 8px; display: none;">Stop Picking</button>
+        
+        <div id="selectedElementsList" style="margin-top: 16px; display: none;">
+          <label class="label">Selected Elements</label>
+          <div id="selectedElementsContainer" class="selected-elements-container"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <label class="toggle-label">
+        <input type="checkbox" id="enabledToggle" class="toggle">
+        <span class="toggle-slider"></span>
+        <span class="toggle-text">Enable Color Changes</span>
+      </label>
+    </div>
+
+    <div class="section">
+      <label for="filterMode" class="label">Filter Mode</label>
+      <select id="filterMode" class="select">
+        <option value="all">All Events</option>
+        <option value="filtered">Filtered Events Only</option>
+      </select>
+    </div>
+
+    <div class="section" id="filterSection" style="display: none;">
+      <label for="filterKeywords" class="label">Filter Keywords</label>
+      <textarea id="filterKeywords" class="textarea" placeholder="Enter keywords or phrases (one per line)&#10;Example:&#10;Meeting&#10;Health Consultation&#10;Appointment"></textarea>
+      <p class="hint">Separate keywords with new lines. Events matching any keyword will be colored.</p>
+      
+      <div class="checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="filterByTitle" class="checkbox" checked>
+          <span>Match event titles</span>
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="filterByCalendar" class="checkbox">
+          <span>Match calendar names</span>
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="caseSensitive" class="checkbox">
+          <span>Case sensitive</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="section">
+      <label for="colorMode" class="label">Color Mode</label>
+      <select id="colorMode" class="select">
+        <option value="random">Random Colors</option>
+        <option value="gradient">Gradient Colors</option>
+        <option value="custom">Event Color</option>
+      </select>
+    </div>
+
+    <div class="section" id="customColorSection" style="display: none;">
+      <label for="customColor" class="label">Event Color</label>
+      <div class="color-input-group">
+        <input type="color" id="customColor" class="color-picker" value="#4285f4">
+        <input type="text" id="customColorText" class="color-text" value="#4285f4" placeholder="#4285f4">
+      </div>
+    </div>
+
+    <div class="section">
+      <label class="toggle-label">
+        <input type="checkbox" id="outlineEnabledToggle" class="toggle">
+        <span class="toggle-slider"></span>
+        <span class="toggle-text">Enable Event Outline</span>
+      </label>
+      <p class="hint">Adds an outline around colored events</p>
+    </div>
+
+    <div class="section" id="outlineOptionsSection" style="display: none;">
+      <label for="outlineDisplayMode" class="label">Outline Display Mode</label>
+      <select id="outlineDisplayMode" class="select">
+        <option value="all">All Events</option>
+        <option value="filtered">Filtered Events Only</option>
+      </select>
+
+      <label for="outlineThickness" class="label" style="margin-top: 16px;">Outline Thickness</label>
+      <input type="range" id="outlineThickness" class="slider" min="0.5" max="4" step="0.5" value="1">
+      <div class="slider-value">
+        <span id="outlineThicknessValue">1px</span>
+      </div>
+
+      <label for="outlineColor" class="label" style="margin-top: 16px;">Outline Color</label>
+      <div class="color-input-group">
+        <input type="color" id="outlineColor" class="color-picker" value="#ffffff">
+        <input type="text" id="outlineColorText" class="color-text" value="#ffffff" placeholder="#ffffff">
+      </div>
+    </div>
+
+    <div class="section">
+      <label class="toggle-label">
+        <input type="checkbox" id="iconEnabledToggle" class="toggle">
+        <span class="toggle-slider"></span>
+        <span class="toggle-text">Show Umbrella Icon</span>
+      </label>
+      <p class="hint">Adds a small umbrella icon next to event titles</p>
+    </div>
+
+    <div class="section" id="iconColorSection" style="display: none;">
+      <label class="toggle-label">
+        <input type="checkbox" id="iconWhiteToggle" class="toggle">
+        <span class="toggle-slider"></span>
+        <span class="toggle-text">Make Icon White</span>
+      </label>
+      <p class="hint">Makes the icon white for better visibility</p>
+
+      <label for="customIconSvg" class="label" style="margin-top: 16px;">Custom SVG Icon (Optional)</label>
+      <textarea id="customIconSvg" class="textarea" placeholder="Paste your SVG code here&#10;Example: &lt;svg&gt;&lt;path d='...'&gt;&lt;/svg&gt;&#10;Leave empty to use default umbrella icon"></textarea>
+      <p class="hint">Paste your custom SVG code. Leave empty to use the default umbrella icon.</p>
+      <button id="clearCustomIconBtn" class="button button-secondary" style="margin-top: 8px; display: none;">Clear Custom Icon</button>
+    </div>
+
+    <div class="section">
+      <label class="toggle-label">
+        <input type="checkbox" id="textColorEnabledToggle" class="toggle">
+        <span class="toggle-slider"></span>
+        <span class="toggle-text">Enable Text Color</span>
+      </label>
+      <p class="hint">Customize the text color of calendar events</p>
+    </div>
+
+    <div class="section" id="textColorOptionsSection" style="display: none;">
+      <label for="textColorDisplayMode" class="label">Text Color Display Mode</label>
+      <select id="textColorDisplayMode" class="select">
+        <option value="all">All Events</option>
+        <option value="filtered">Filtered Events Only</option>
+      </select>
+      <p class="hint">Choose whether to apply text color to all events or only those matching your color filter.</p>
+
+      <label for="textColor" class="label" style="margin-top: 16px;">Text Color</label>
+      <div class="color-input-group">
+        <input type="color" id="textColor" class="color-picker" value="#ffffff">
+        <input type="text" id="textColorText" class="color-text" value="#ffffff" placeholder="#ffffff">
+      </div>
+    </div>
+
+    <div class="section" id="iconFilterSection" style="display: none;">
+      <label for="iconDisplayMode" class="label">Icon Display Mode</label>
+      <select id="iconDisplayMode" class="select">
+        <option value="all">All Events</option>
+        <option value="filtered">Filtered Events Only</option>
+      </select>
+      <p class="hint">Choose whether to show the icon on all events or only those matching your color filter.</p>
+    </div>
+
+    <div class="section" id="iconKeywordsSection" style="display: none;">
+      <label for="iconKeywords" class="label">Icon Keywords</label>
+      <textarea id="iconKeywords" class="textarea" placeholder="Enter keywords (one per line)&#10;Events matching these will show the icon"></textarea>
+      <p class="hint">Leave empty to show icon on all events (when using 'Custom Keywords' mode)</p>
+    </div>
+
+    <div class="section">
+      <button id="applyBtn" class="button button-primary">Apply Changes</button>
+      <button id="resetBtn" class="button button-secondary">Reset</button>
+    </div>
+
+    <div class="footer">
+      <p class="info">Changes apply to Google Calendar events</p>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
+

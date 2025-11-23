@@ -148,16 +148,23 @@
   left: -9999px !important;
 }
 
-/* Style .xnWuge with umbrella SVG background */
-/* JavaScript sets background-image dynamically - CSS only sets supporting properties */
+/* Style .xnWuge to host the umbrella SVG rather than a flat color */
 .hMdQi .xnWuge,
 .xnWuge {
-  background-repeat: no-repeat !important;
-  background-position: center !important;
-  background-size: contain !important;
-  /* background-color set by JS - don't override here */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: transparent !important;
   -webkit-mask: none !important;
   mask: none !important;
+}
+
+/* Ensure the injected umbrella image fills the available space cleanly */
+.xnWuge img[data-tpi-umbrella] {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  display: block !important;
 }
 
 /* Apply the same border-radius to the colored background element to match the popup perfectly */

@@ -401,47 +401,54 @@
   }
 
 
-  // Style .xnWuge element with umbrella SVG background
+  // Replace the colored .xnWuge block with the umbrella SVG
   function styleXnWugeElement(popup) {
     if (!popup) return;
-    
+
     // Get extension ID
     const extensionId = chrome.runtime.id;
     const umbrellaSvgUrl = `chrome-extension://${extensionId}/UMBRELLA.svg`;
-    
+
+    const injectSvg = (umbrellaEl) => {
+      if (!umbrellaEl) return;
+
+      // Remove existing background fill and ensure layout centers the SVG
+      umbrellaEl.style.setProperty('background', 'transparent', 'important');
+      umbrellaEl.style.setProperty('display', 'flex', 'important');
+      umbrellaEl.style.setProperty('align-items', 'center', 'important');
+      umbrellaEl.style.setProperty('justify-content', 'center', 'important');
+
+      // Only inject once per element
+      let svgImg = umbrellaEl.querySelector('img[data-tpi-umbrella]');
+      if (!svgImg) {
+        svgImg = document.createElement('img');
+        svgImg.setAttribute('data-tpi-umbrella', 'true');
+        svgImg.setAttribute('alt', 'Umbrella icon');
+        svgImg.style.setProperty('width', '100%', 'important');
+        svgImg.style.setProperty('height', '100%', 'important');
+        svgImg.style.setProperty('object-fit', 'contain', 'important');
+
+        // Clear any existing children before inserting the SVG image
+        while (umbrellaEl.firstChild) {
+          umbrellaEl.removeChild(umbrellaEl.firstChild);
+        }
+
+        umbrellaEl.appendChild(svgImg);
+      }
+
+      // Always ensure the correct source is applied
+      if (svgImg.src !== umbrellaSvgUrl) {
+        svgImg.src = umbrellaSvgUrl;
+      }
+    };
+
     // Find and style all .xnWuge elements
     const xnWugeElements = popup.querySelectorAll('.xnWuge');
-    xnWugeElements.forEach(umbrellaEl => {
-      if (umbrellaEl) {
-        umbrellaEl.style.setProperty(
-          'background-image',
-          `url("${umbrellaSvgUrl}")`,
-          'important'
-        );
-        umbrellaEl.style.setProperty('background-repeat', 'no-repeat', 'important');
-        umbrellaEl.style.setProperty('background-position', 'center', 'important');
-        umbrellaEl.style.setProperty('background-size', 'contain', 'important');
-        
-        // Keep brand color as the backing fill if the SVG has transparency
-        umbrellaEl.style.setProperty('background-color', 'rgb(75, 153, 210)', 'important');
-      }
-    });
-    
+    xnWugeElements.forEach(injectSvg);
+
     // Also try document-wide query and filter to popup
     const allXnWuge = Array.from(document.querySelectorAll('.xnWuge')).filter(el => popup.contains(el));
-    allXnWuge.forEach(umbrellaEl => {
-      if (umbrellaEl) {
-        umbrellaEl.style.setProperty(
-          'background-image',
-          `url("${umbrellaSvgUrl}")`,
-          'important'
-        );
-        umbrellaEl.style.setProperty('background-repeat', 'no-repeat', 'important');
-        umbrellaEl.style.setProperty('background-position', 'center', 'important');
-        umbrellaEl.style.setProperty('background-size', 'contain', 'important');
-        umbrellaEl.style.setProperty('background-color', 'rgb(75, 153, 210)', 'important');
-      }
-    });
+    allXnWuge.forEach(injectSvg);
   }
   
   // Remove specific element by selector
